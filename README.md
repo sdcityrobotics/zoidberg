@@ -15,11 +15,16 @@ but this is very light on the implimentation.
 
 The basic program will basicly be to:
 
-takeoff to altitude (Hopefully this works for dives)
-turn to heading
-set throttle
-run for a set amount of time
-turn off throttle
-idle at waypoint
+1) takeoff to altitude (Hopefully this works for dives)
+
+2) turn to heading
+
+3) set throttle
+
+4) run for a set amount of time
+
+5) turn off throttle
+
+6) idle at waypoint
 
 We'll see how that goes...
