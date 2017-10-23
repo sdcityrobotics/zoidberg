@@ -32,10 +32,13 @@ device = '/dev/tty.usbmodem1'
 
 # currently only know how to request all the possible data
 data_stream_ID = mavutil.mavlink.MAV_DATA_STREAM_ALL
-data_rate = 10
+#data_stream_ID = mavutil.mavlink.MAV_DATA_STREAM_RC_CHANNELS
+#data_stream_ID = mavutil.mavlink.MAV_DATA_STREAM_RAW_CONTROLLER
+#data_stream_ID = mavutil.mavlink.MAV_DATA_STREAM_RAW_SENSORS
+data_rate = 100
 
 # number of messages to read
-num_points = 10
+num_points = 100
 
 def read_messages(mav_obj, file_obj):
     """
@@ -48,12 +51,12 @@ def read_messages(mav_obj, file_obj):
             # flush out all bad data msgs at start
             sys.stdout.write(msg.data)
             sys.stdout.flush()
-    else:
-        file_obj.write(str(msg))
-        file_obj.write('\n')
     i = 0
     while i < num_points:
         msg = mav_obj.recv_match(blocking=True)
+        # don't bother saving heartbeats
+        if msg.get_type() == 'HEARTBEAT':
+            continue
         # if something catches your interest, pull out that msg type
         #msg = mav_obj.recv_match(type='GLOBAL_POSITION_INT', blocking=True)
         file_obj.write(str(msg))
