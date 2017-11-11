@@ -9,7 +9,7 @@ possible mesages. This script just prints a ton of messages
 
 import numpy as np
 import matplotlib.pyplot as plt
-from pymavlink import mavutil
+from pymavlink import mavutil, mavparm
 import sys
 import glob
 
@@ -35,7 +35,7 @@ data_stream_ID = mavutil.mavlink.MAV_DATA_STREAM_ALL
 data_rate = 10
 
 # plot the output
-num_points = 10
+num_points = 1000
 
 def read_messages(mav_obj):
     """
@@ -55,8 +55,10 @@ def read_messages(mav_obj):
         msg = mav_obj.recv_match(blocking=True)
         # if something catches your interest, pull out that msg type
         #msg = mav_obj.recv_match(type='GLOBAL_POSITION_INT', blocking=True)
-        print(msg)
+        if not(msg.get_msgId() == -1) and msg.name == 'PARAM_VALUE':
+            print(msg)
         i += 1
+    return msg
 
 mav = mavutil.mavlink_connection(device, baud=11520)
 # check that there is a heartbeat
@@ -68,12 +70,13 @@ print('')
 
 # a try block ensures that mav with always be closed
 try:
+    mav.param_fetch_all()
     mav.mav.request_data_stream_send(mav.target_system,
                                      mav.target_component,
                                      data_stream_ID,
                                      data_rate,
                                      1)
-    read_messages(mav)
+    msg = read_messages(mav)
 finally:
     # close the connection
     mav.mav.request_data_stream_send(mav.target_system,
