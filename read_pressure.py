@@ -1,16 +1,16 @@
 """
-=================
-Read all messages
-=================
-Since the documenation for pymavlink, mavlink and ardupilot seem to be sparse,
-the best way to find an answer to a problem may first be to look at all
-possible mesages. This script just prints a ton of messages
+======================
+Read pressure data
+======================
+Simple demonstration of how to read from the pyhawk. First a communication
+link is established, then a request is sent for it to start sending out
+imformation. Then it is simply a matter of finding the information of interest,
+and saving the output.
 """
 
 import numpy as np
 import matplotlib.pyplot as plt
-from pymavlink import mavutil, mavparm
-import sys
+from pymavlink import mavutil
 import glob
 
 # The first challenge is to find the pyxhawk device name. On linux:
@@ -35,30 +35,30 @@ data_stream_ID = mavutil.mavlink.MAV_DATA_STREAM_ALL
 data_rate = 10
 
 # plot the output
-num_points = 1000
+num_points = 100
+taxis = np.arange(num_points, dtype=np.float_) / num_points * data_rate
 
-def read_messages(mav_obj):
+
+def read_accelerometer(mav_obj, taxis):
     """
     Read accelerometer readings until taxis is exhausted.
     There will only be output once the total time has elapsed.
     """
+    msg_type = 'SCALED_PRESSURE2'
+    press = []
+
     msg = mav_obj.recv_match(blocking=True)
     if msg.get_type() == "BAD_DATA":
         if mavutil.all_printable(msg.data):
-            # flush out all bad data msgs at start
             sys.stdout.write(msg.data)
             sys.stdout.flush()
-    else:
-        print(msg)
-    i = 0
-    while i < num_points:
-        msg = mav_obj.recv_match(blocking=True)
-        # if something catches your interest, pull out that msg type
-        #msg = mav_obj.recv_match(type='GLOBAL_POSITION_INT', blocking=True)
-        if not(msg.get_msgId() == -1) and msg.name == 'PARAM_VALUE':
-            print(msg)
-        i += 1
-    return msg
+    elif msg.get_type() == msg_type:
+        press.append(msg.press_abs)
+
+    for t in taxis:
+        msg = mav_obj.recv_match(type=msg_type, blocking=True)
+        press.append(msg.press_abs)
+    return press
 
 mav = mavutil.mavlink_connection(device, baud=11520)
 # check that there is a heartbeat
@@ -70,13 +70,15 @@ print('')
 
 # a try block ensures that mav with always be closed
 try:
-    mav.param_fetch_all()
+    # open the connection
     mav.mav.request_data_stream_send(mav.target_system,
                                      mav.target_component,
                                      data_stream_ID,
                                      data_rate,
                                      1)
-    msg = read_messages(mav)
+
+    print('Recording pressure for %.1f seconds'%np.max(taxis))
+    press = read_accelerometer(mav, taxis)
 finally:
     # close the connection
     mav.mav.request_data_stream_send(mav.target_system,
@@ -85,3 +87,13 @@ finally:
                                      data_rate,
                                      0)
     mav.close()
+
+fig, ax = plt.subplots()
+
+ax.set_title('Recorded pressure data')
+ax.plot(taxis, press)
+ax.grid()
+ax.set_ylabel('pressure, hectopascal')
+ax.set_xlabel('time, sec')
+
+plt.show()

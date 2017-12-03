@@ -14,7 +14,7 @@ import sys
 import glob
 
 # The first challenge is to find the pyxhawk device name. On linux:
-device = '/dev/serial/by-id/usb-3D_Robotics_PX4_FMU_v2.x_0-if00'
+#device = '/dev/serial/by-id/usb-3D_Robotics_PX4_FMU_v2.x_0-if00'
 # This may require that you add yourself to the user group dialout
 # If you get a permission denied error, see
 # https://unix.stackexchange.com/questions/14354/read-write-to-a-serial-port-without-root#14363
@@ -28,14 +28,14 @@ device = '/dev/serial/by-id/usb-3D_Robotics_PX4_FMU_v2.x_0-if00'
 ## find the set difference between the two glob lists. this is the pyxhawk
 #device = set(a4).difference(set(b4))
 #device = device.pop()
-#device = '/dev/tty.usbmodem1'
+device = '/dev/tty.usbmodem1'
 
 # currently only know how to request all the possible data
 data_stream_ID = mavutil.mavlink.MAV_DATA_STREAM_ALL
 data_rate = 10
 
 # plot the output
-num_points = 10
+num_points = 100
 
 def read_messages(mav_obj):
     """
