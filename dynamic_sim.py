@@ -67,8 +67,10 @@ r_axis[-cap_len:] *= np.sin(np.pi / 2 +
 tube_pos = np.array([np.ones_like(th_axis)[:, None] * l_axis,
                      np.cos(th_axis)[:, None] * r_axis,
                      np.sin(th_axis)[:, None] * r_axis])
+
 tube_pos = np.moveaxis(tube_pos, 0, -1)
 
+xpos = [tube_pos]
 # motors
 l_axis = np.arange(301) / 300 * mot_l
 r_axis = np.ones_like(l_axis) * mot_w
@@ -81,34 +83,39 @@ r_axis[-cap_len:] *= np.sin(np.pi / 2 +
 mot_pos = np.array([np.ones_like(th_axis)[:, None] * l_axis,
                     np.cos(th_axis)[:, None] * r_axis,
                     np.sin(th_axis)[:, None] * r_axis])
+
 mot_pos = np.moveaxis(mot_pos, 0, -1)
 
-xpos = []
+def get_half_rot(q1, q2):
+    """Find the halfway rotation between two quaternions
+    returns nan when q1 == -q2
+    """
+    v1 = q1.components[1:]
+    v2 = q2.components[1:]
+    qnorm = np.sqrt(np.sum(v1 ** 2) * np.sum(v2 ** 2))
+    qout = np.quaternion(np.dot(v1, v2) + qnorm, *np.cross(v1, v2))
+    return qout.normalized()
+
 for r, m in zip(rvec, mvec):
     # cylinder is defined in [1, 0, 0] direction, rotate to motor attitude
-    qf = np.quaternion(0, 1, 0, 0) / np.quaternion(*m)
-    qf = qf.sqrt()
+    qf = get_half_rot(np.quaternion(0, 1, 0, 0), np.quaternion(*m))
     qx = np.concatenate((np.zeros(list(mot_pos.shape[:2]) + [1]),
                          mot_pos), axis=-1)
     qx = quaternion.as_quat_array(qx)
     xpos.append(quaternion.as_float_array(qf * qx / qf)[:, :, 1:] + r)
 
-sub_model = np.concatenate(xpos + [tube_pos])
-
-def get_rot(att_vec):
-    """rotate object to desired attitude
-    formulation is from 'General rotations' section of wikipedia article
-    order of matrix multiplication is important
-    """
+def get_rot(att_vec, model):
+    """rotate object to desired attitude"""
     att_vec = np.array(att_vec)
-    return sub_model[:, :, 0], sub_model[:, :, 1], sub_model[:, :, 2]
-
-X, Y, Z = get_rot([0.2, 0, 0])
+    return model[:, :, 0], model[:, :, 1], model[:, :, 2]
 
 fig = plt.figure()
 ax = fig.add_subplot(111, projection='3d')
 
-ax.plot_surface(X, Y, Z)
+for part in xpos:
+    X, Y, Z = get_rot([0.2, 0, 0], part)
+    ax.plot_surface(X, Y, Z, color='C0')
+
 ax.set_xlim(-fh_length, fh_length)
 ax.set_ylim(-fh_length, fh_length)
 ax.set_zlim(-fh_length, fh_length)
