@@ -39,15 +39,13 @@ mvec = np.array([[0., 0, 1],
 x_ddot = lambda fvec: np.sum(fvec[:, None] * mvec, axis=0) / fh_mass
 
 # angulat acceleration is defined in body relative coordinate frame
-theta_ddot = lambda fvec: np.dot(I_invt, (F1 * np.cross(r1, m1)
-                                          + F2 * np.cross(r2, m2)
-                                          + F3 * np.cross(r3, m3)
-                                          + F4 * np.cross(r4, m4)))
+theta_ddot = lambda fvec: I_invt @ np.sum(fvec[:, None] * np.cross(rvec, mvec),
+                                          axis=0)
 
-theta_dot = lambda td_last, fvec: td_last + theta_ddot(F1, F2, F3, F4) * dt
+theta_dot = lambda td_last, fvec: td_last + theta_ddot(fvec) * dt
 
 theta = lambda t_last, td_last, fvec: t_last\
-                                      + theta_dot(td_last, F1, F2, F3, F4) * dt
+                                      + theta_dot(td_last, fvec) * dt
 
 # sub model
 # main body tube
