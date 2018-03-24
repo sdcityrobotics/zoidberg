@@ -46,10 +46,8 @@ theta_ddot = lambda fvec: np.dot(I_invt, (F1 * np.cross(r1, m1)
 
 theta_dot = lambda td_last, fvec: td_last + theta_ddot(F1, F2, F3, F4) * dt
 
-theta = lambda t_last, td_last, fvec: t_last + theta_dot(td_last, F1, F2, F3, F4) * dt
-
-# attitude vector is defined (yaw, pitch, roll)
-attitude = np.array([0., 0, 0])
+theta = lambda t_last, td_last, fvec: t_last\
+                                      + theta_dot(td_last, F1, F2, F3, F4) * dt
 
 # sub model
 # main body tube
@@ -92,6 +90,10 @@ def get_half_rot(q1, q2):
     """
     v1 = q1.components[1:]
     v2 = q2.components[1:]
+    if np.abs(np.sum(v1 ** 2)) < 1e-10:
+        return np.quaternion(1, 0, 0)
+    if np.abs(np.sum(v2 ** 2)) < 1e-10:
+        return np.quaternion(1, 0, 0)
     qnorm = np.sqrt(np.sum(v1 ** 2) * np.sum(v2 ** 2))
     qout = np.quaternion(np.dot(v1, v2) + qnorm, *np.cross(v1, v2))
     return qout.normalized()
@@ -104,24 +106,35 @@ for r, m in zip(rvec, mvec):
     qx = quaternion.as_quat_array(qx)
     xpos.append(quaternion.as_float_array(qf * qx / qf)[:, :, 1:] + r)
 
-def get_rot(att_vec, model):
+def rotate_obj(rot_q, model):
     """rotate object to desired attitude"""
-    att_vec = np.array(att_vec)
-    return model[:, :, 0], model[:, :, 1], model[:, :, 2]
+    qf = get_half_rot(np.quaternion(1, 0, 0), rot_q)
+    qx = np.concatenate((np.zeros(list(model.shape[:2]) + [1]),
+                         model), axis=-1)
+    qx = quaternion.as_quat_array(qx)
+    rot_pos = quaternion.as_float_array(qf * qx / qf)[:, :, 1:]
+    return rot_pos[:, :, 0], rot_pos[:, :, 1], rot_pos[:, :, 2]
 
+# test rot
+#qinit = quaternion.from_euler_angles(0, 0, 0)
+qinit = quaternion.from_euler_angles(0.1, 0, 0)
+#qinit = quaternion.from_euler_angles(0, 0.1, 0)
+#qinit = quaternion.from_euler_angles(np.pi / 2, 0, 0)
 fig = plt.figure()
 ax = fig.add_subplot(111, projection='3d')
 
 for part in xpos:
-    X, Y, Z = get_rot([0.2, 0, 0], part)
+    X, Y, Z = rotate_obj(qinit, part)
     ax.plot_surface(X, Y, Z, color='C0')
 
 ax.set_xlim(-fh_length, fh_length)
 ax.set_ylim(-fh_length, fh_length)
 ax.set_zlim(-fh_length, fh_length)
+ax.set_xticks([0, fh_length])
+ax.set_yticks([0, fh_length])
+ax.set_zticks([0, fh_length])
 ax.set_xlabel('x')
 ax.set_ylabel('y')
 ax.set_zlabel('z')
-
 
 plt.show(block=False)
