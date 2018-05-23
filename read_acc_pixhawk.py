@@ -44,7 +44,8 @@ def read_accelerometer(mav_obj, taxis):
     Read accelerometer readings until taxis is exhausted.
     There will only be output once the total time has elapsed.
     """
-    msg_type = 'SCALED_IMU2'
+    #msg_type = 'SCALED_IMU2'
+    msg_type = 'HIGHRES_IMU'
     xacc = []
     yacc = []
     zacc = []
@@ -54,10 +55,6 @@ def read_accelerometer(mav_obj, taxis):
         if mavutil.all_printable(msg.data):
             sys.stdout.write(msg.data)
             sys.stdout.flush()
-    elif msg.get_type() == msg_type:
-        xacc.append(msg.xacc)
-        yacc.append(msg.yacc)
-        zacc.append(msg.zacc)
 
     for t in taxis:
         msg = mav_obj.recv_match(type=msg_type, blocking=True)
