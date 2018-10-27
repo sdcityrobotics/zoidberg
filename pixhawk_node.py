@@ -10,8 +10,8 @@ from pymavlink import mavutil
 import sys
 from time import time, sleep
 import lcm
-from .utils import timestamp, pause
-from .pixhawk_readings_t import PixhawkReading
+from utils import timestamp, pause
+from pixhawk_readings_t import PixhawkReading
 
 class PixhawkNode:
     """Communication with the pixhawk, and log messages"""
@@ -78,6 +78,7 @@ class PixhawkNode:
                                             blocking=False)
 
 if __name__ == "__main__":
+    from serial import SerialException
     print("hello")
     update_period = 0.05
     # Mac address
@@ -94,5 +95,7 @@ if __name__ == "__main__":
             pn.check_readings()
             # sleep to maintain constant rate
             pause(loop_start, update_period)
-    finally:
+    except SerialException:
+        print('Pixhawk is not connected to %s'%device)
+    else:
         pn.isactive(False)
