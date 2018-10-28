@@ -14,7 +14,6 @@ GitBook](http://www.ardusub.com/developers/pymavlink.html).
 from pymavlink import mavutil
 import sys
 from time import time, sleep
-import lcm
 from utils import timestamp, pause
 from pixhawk_readings_t import PixhawkReading
 from math import pi
