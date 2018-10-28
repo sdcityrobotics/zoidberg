@@ -7,6 +7,6 @@ def timestamp():
 
 def pause(start_time, action_period):
     """Sleep untill next action period"""
-    tsleep = start_time + update_period - time()
+    tsleep = start_time + action_period - time()
     if tsleep > 0:
         sleep(tsleep)

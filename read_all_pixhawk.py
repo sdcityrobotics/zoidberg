@@ -29,6 +29,7 @@ device = '/dev/tty.usbmodem1'
 # currently only know how to request all the possible data
 data_stream_ID = mavutil.mavlink.MAV_DATA_STREAM_ALL
 data_rate = 10
+num_points = 1000
 
 def read_messages(mav_obj):
     """
@@ -48,7 +49,7 @@ def read_messages(mav_obj):
         msg = mav_obj.recv_match(blocking=True)
         # if something catches your interest, pull out that msg type
         #msg = mav_obj.recv_match(type='GLOBAL_POSITION_INT', blocking=True)
-        msg = mav_obj.recv_match(type='SCALED_IMU2', blocking=True)
+        #msg = mav_obj.recv_match(type='SCALED_IMU2', blocking=True)
         #msg = mav_obj.recv_match(type='RAW_IMU', blocking=True)
         print(msg)
         i += 1
