@@ -14,8 +14,7 @@ GitBook](http://www.ardusub.com/developers/pymavlink.html).
 from pymavlink import mavutil
 import sys
 from time import time, sleep
-from utils import timestamp, pause
-from pixhawk_readings_t import PixhawkReading
+from fish_hawk import timestamp, pause, PixhawkReading
 from math import pi
 
 class PixhawkNode:
@@ -82,10 +81,10 @@ class PixhawkNode:
 
         if to_arm:
             # set mode to stabalize
-            self.set_mode('STABILIZE')
+            self.change_mode('STABILIZE')
         else:
             # close the connection
-            self.set_mode('MANUAL')
+            self.change_mode('MANUAL')
             self._mav.close()
 
     def check_readings(self):
@@ -106,8 +105,6 @@ class PixhawkNode:
                                             rc.servo3_raw, rc.servo4_raw,
                                             rc.servo5_raw, rc.servo6_raw,
                                             rc.servo7_raw, rc.servo8_raw]
-            print('heading %.1f'%self.pix_readings.heading)
-            print(self.pix_readings.rc_out)
 
     def change_mode(self, mode):
         """ Change the operation mode of the pixhawk

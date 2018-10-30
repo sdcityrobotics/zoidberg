@@ -1,30 +1,17 @@
 # fish_hawk
 
-Library designed to interface with a PIXHAWK autopilot module.
-The code should be run in python2. I prefer running the code in ipython2, and
-editing the source in a good text editor (not to get specific :). Basicly,
-auto indent with spaces for tabs is really a must.
+Library designed to interface with a PIXHAWK autopilot module. This is split
+into a few scripts, which exist in the upper folder, and a node, which is in
+the inner fish_hawk folder. The node has to be installed, and this is done
+by first navigating to the upper folder (with setup.py in it) and typing
 
-# TODO
-The next step is to work with waypoint files. There is fairly good discription
-of the low level message passing for this on
+```
+pip install .
+```
 
-http://qgroundcontrol.org/mavlink/waypoint_protocol
+This assumes that there is an active anaconda enviornment enabled. This command
+should not require sudo. If it asks for a password, cancel and use
 
-but this is very light on the implimentation.
-
-The basic program will basicly be to:
-
-1) takeoff to altitude (Hopefully this works for dives)
-
-2) turn to heading
-
-3) set throttle
-
-4) run for a set amount of time
-
-5) turn off throttle
-
-6) idle at waypoint
-
-We'll see how that goes...
+```
+pip install . --user
+```
