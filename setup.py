@@ -11,5 +11,7 @@ setup(name='fish_hawk',
       install_requires=[
           'pymavlink',
           'pyserial',
+          'setuptools',
+          'hidapi'
       ],
       zip_safe=False)
