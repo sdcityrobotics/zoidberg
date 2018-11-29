@@ -14,7 +14,7 @@ GitBook](http://www.ardusub.com/developers/pymavlink.html).
 from pymavlink import mavutil
 import sys
 from time import time, sleep
-from fish_hawk import timestamp, pause, PixhawkReading
+from fish_hawk import timestamp, PixhawkReading
 from math import pi
 
 class PixhawkNode:
@@ -177,28 +177,3 @@ class PixhawkNode:
             #msg = self._mav.recv_match(type=self.message_types, blocking=False)
             msg = self._mav.recv_match(blocking=False)
         return isnew
-
-
-
-if __name__ == "__main__":
-    from serial import SerialException
-    update_period = 0.05
-    # Mac OSX address
-    device = '/dev/tty.usbmodem1'
-    pn = PixhawkNode(device)
-
-    # try loop is used to ensure that communication with pixhawk is
-    # terminated.
-    try:
-        # startup data stream
-        pn.isactive(True)
-        while True:
-            loop_start = time()
-            pn.check_readings()
-            # sleep to maintain constant rate
-            pause(loop_start, update_period)
-    except SerialException:
-        print('Pixhawk is not connected to %s'%device)
-    finally:
-        print('Shutting down communication')
-        pn.isactive(False)

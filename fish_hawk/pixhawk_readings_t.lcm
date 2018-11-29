@@ -1,9 +1,0 @@
-package zoidberg_lcm;
-
-struct pixhawk_readings_t
-{
-    int64_t  timestamp;
-    double   heading;
-    double   rc_command[4];
-    double   rc_out[8];
-}
