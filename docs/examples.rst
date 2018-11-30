@@ -2,7 +2,7 @@ Examples
 ========
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
 
    examples/heading_out
    examples/controller_out
