@@ -55,4 +55,7 @@ Examples
    :maxdepth: 1
    :caption: Contents:
 
+   index
+   pixhawk
+   controller
    examples
