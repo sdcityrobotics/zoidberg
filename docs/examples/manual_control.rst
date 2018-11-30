@@ -7,6 +7,7 @@ A simple pipe from the logitech controller to the pixhawk apm.
 
 
 .. code:: python
+
     from fish_hawk import ManualControlNode, PixhawkNode, pause
     from serial import SerialException
 
