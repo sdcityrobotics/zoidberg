@@ -10,6 +10,7 @@ if only to verify that it is working at all.
 
     from fish_hawk import PixhawkNode, pause
     from serial import SerialException
+    from time import time
 
     update_period = 0.05
     # Mac OSX address of pixhawk

@@ -10,6 +10,7 @@ A simple pipe from the logitech controller to the pixhawk apm.
 
     from fish_hawk import ManualControlNode, PixhawkNode, pause
     from serial import SerialException
+    from time import time
 
     update_period = 0.05
 

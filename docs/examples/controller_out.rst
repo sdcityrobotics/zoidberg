@@ -9,6 +9,7 @@ if only to verify that it is working at all.
 .. code:: python
 
     from fish_hawk import ManualControlNode, pause
+    from time import time
 
     update_period = 0.05
     cntr = ManualControlNode()
