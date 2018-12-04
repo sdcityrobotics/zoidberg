@@ -54,10 +54,10 @@ There are currently two optional installs for this package
 2. zed
 
 To install the controller package first follow the install instructions for
-[cython-hidapi](https://github.com/trezor/cython-hidapi).
+`cython-hidapi <https://github.com/trezor/cython-hidapi>`_.
 
 To install the zed package first follow the install instructions for
-[pyzed](https://github.com/stereolabs/zed-python).
+`pyzed <https://github.com/stereolabs/zed-python>`_.
 
 After completing the  the specific installations,  install an optional feature
 with the following command, i.e. controller
