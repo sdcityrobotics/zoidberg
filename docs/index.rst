@@ -46,6 +46,28 @@ should not require sudo. If it asks for a password, cancel and use
 
     pip install . --user
 
+Optional installs
+-----------------
+There are currently two optional installs for this package
+
+1. controller
+2. zed
+
+To install the controller package first follow the install instructions for
+[cython-hidapi](https://github.com/trezor/cython-hidapi).
+
+To install the zed package first follow the install instructions for
+[pyzed](https://github.com/stereolabs/zed-python).
+
+After completing the  the specific installations,  install an optional feature
+with the following command, i.e. controller
+
+.. code-block:: bash
+
+    pip install .[controller]
+
+
+
 Examples
 --------
 
