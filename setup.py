@@ -17,6 +17,6 @@ setup(name='fish_hawk',
       ],
       extras_require={
           'controller': ["hidapi"],
-          'zed': ["pyzed", "cv2"],
+          'zed': ["pyzed", "cv2", "pillow"],
           },
       zip_safe=False)
