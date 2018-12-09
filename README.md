@@ -69,8 +69,6 @@ To install the controller package first follow the install instructions for
 
 2. Install opencv. This is simple with conda
 
-.. code-block:: bash
-
     conda install opencv
 
 If conda is not available,
