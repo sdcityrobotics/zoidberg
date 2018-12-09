@@ -15,9 +15,9 @@ more activly developed version).
 
 The anaconda distribution framework is also great for installing complicated
 packages like opencv. Most common packages are installed using the command line
-tool conda, i.e.
+tool conda. If you have conda, go ahead and run the line:
 
-    conda install numpy scipy opencv
+    conda install numpy scipy opencv pillow pyserial matplotlib setuptools
 
 There is another package manager which does ostensibly the same thing, pip.
 When the conda installer can't find a package, or if you can not install
