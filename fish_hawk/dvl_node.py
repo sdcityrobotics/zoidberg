@@ -6,9 +6,7 @@ THIS CODE IS COMPLETELY UNTESTED AND IS MEANT AS A TEMPLATE ONLY
 
 Interface with the Zoidberg DVL
 """
-
 import serial, time
-from zoidberg_nav.msg import DVL
 
 class DVLNode:
     """
@@ -19,72 +17,75 @@ class DVLNode:
         Function to Initialize the Serial Port
         """
         # open a non-blocking serial port
-        ser = serial.Serial(timeout=0)
-        ser.baudrate = 115200
-        ser.port = '/dev/serial/by-id/usb-FTDI_US232R_FT0TFKDN-if00-port0'
-        ser.bytesize = serial.EIGHTBITS
-        ser.parity = serial.PARITY_NONE
-        ser.stopbits = serial.STOPBITS_ONE
-        self.errNum = 9999
+        self._ser = serial.Serial(timeout=0, baudrate=115200)
+        self.port = '/dev/serial/by-id/usb-FTDI_US232R_FT0TFKDN-if00-port0'
 
-        # Specify the TimeOut in seconds, so that SerialPort doesn't hang
-        ser.timeout = 1
-        ser.open()  # Opens SerialPort
-        self.ser = ser  # make serial port persistant
+        # specify a number that means error
+        self.errNum = 9999.
 
-        # DVL readings
-        self.x_velocity = 0
-        self.y_velocity = 0
-        self.z_velocity = 0
-        self.x_position = 0
-        self.y_position = 0
-        self.altitude = 0
+        # DVL readings, initialize to empty values
+        self._msg = None
+        self.x_velocity = self.errNum
+        self.y_velocity = self.errNum
+        self.z_velocity = self.errNum
+        self.x_position = self.errNum
+        self.y_position = self.errNum
+        self.altitude = self.errNum
 
     def is_active(self, is_start):
         """Send startup or shutdown message to dvl over serial port"""
         if is_start:
+            self._ser.port = self.port
+            self._ser.port.open()
             # break and then wait before sending start message
-            self.ser.send_break(duration=1)
+            self._ser.send_break(duration=1)
             time.sleep(5)
             # send start message
-            self.ser.write(bytes(b'start\r\n'))
+            self._ser.write(bytes(b'start\r\n'))
             time.sleep(5)
             # flush out the buffer
-            self.ser.read_all()
+            self._ser.read_all()
             for _ in range(5):
                 # check for valid message
-                outputCheck = self.ser.readline()
+                outputCheck = self._ser.readline()
                 splitLine = outputCheck.split(bytes(b','))
                 if splitLine[0] == b'$DVLNAV':
                     return
             # if none of the messages are valid, error out
             raise(IOError('Communication not initialized'))
         else:
-            self.ser.send_break(1)
-            self.ser.write(bytes(b'stop\r\n'))
-            self.ser.close()
+            self._ser.send_break(1)
+            self._ser.write(bytes(b'stop\r\n'))
+            self._ser.close()
 
 
     def check_readings(self):
         """Update to most recent DVL message"""
-        isnew = False  # assume there won't be any messages
-        # readline is non-blocking, can return None
-        msg = self.ser.readline()
-        while msg is not None:
-            splitLine = lineRead.split(bytes(b','))
+        isnew = self._read_buffer()
+        if not isnew:
+            return
+        # velocity estimates have error codes
+        sl = self._msg.split(bytes(b','))
+        self.x_velocity = float(sl[4]) if sl[4] else self.errNum
+        self.y_velocity = float(sl[5]) if sl[5] else self.errNum
+        self.z_velocity = float(sl[6]) if sl[6] else self.errNum
+        # no error codes for x,y & alt coordinates, reading starts at 0
+        self.x_position = float(sl[7])
+        self.y_position = float(sl[8])
+        self.altitude = float(sl[9])
 
-            if splitLine[0] != b'$DVLNAV':
-                # This is not the message of interest, moving along
-                msg = self.ser.readline()
-                continue
-            # The message was good
-            isnew = True  # got something
-            # velocity estimates have error codes
-            self.x_velocity = float(splitLine[4]) if splitLine[4] else self.errNum
-            self.y_velocity = float(splitLine[5]) if splitLine[5] else self.errNum
-            self.z_velocity = float(splitLine[6]) if splitLine[6] else self.errNum
-            # no error codes for x,y & alt coordinates, reading starts at 0
-            self.x_position = float(splitLine[7])
-            self.y_position = float(splitLine[8])
-            self.altitude = float(splitLine[9])
+    def _read_buffer(self):
+        """Basic loop to read to latest reading on a non-blocking buffer"""
+        isnew = False  # assume there won't be any messages
+        try:
+            msg = self._ser.readline()
+        except:
+            print("Reading from a closed serial port")
+            return
+        # readline is non-blocking, can return None
+        while msg is not None:
+            if msg[:7] == b'$DVLNAV':
+                # The message was good
+                self._msg = msg
+                isnew = True  # got something
         return isnew

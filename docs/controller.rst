@@ -26,4 +26,4 @@ The command ``udevadm control --reload-rules`` reloads the rules. The best way
 to ensure the rule has been loaded is a restart.
 
 .. _cython-hidapi: https://github.com/trezor/cython-hidapi
-.. _hidapi-udev: http://github.com/nedlrichards/fish_hawk/tree/master/fish_hawk/udev/99-hidraw-permissions.rules
+.. _hidapi-udev: http://github.com/nedlrichards/fish_hawk/tree/master/udev/99-hidraw-permissions.rules

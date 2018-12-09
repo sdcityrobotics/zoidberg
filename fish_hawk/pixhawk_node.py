@@ -22,10 +22,10 @@ class PixhawkNode:
     def __init__(self, device):
         """Serial connection specifications
         device is a string specifying serial port location of the pixhawk
-        Linux: '/dev/ttyACM0'
+        Linux: '/dev/serial/by-id/usb-3D_Robotics_PX4_FMU_v2.x_0-if00'
         Mac OSX: '/dev/tty.usbmodem1'
         Windows: 'COM7'
-        *The numbers at the end of these strings may change*
+        *Except for Linux, numbers at the end of these strings may change*
         """
 
         self.baud = 11520
