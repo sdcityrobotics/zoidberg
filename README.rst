@@ -7,7 +7,7 @@ instructions.
 
 It is a really good idea to work with a user installed python3 program, and not
 to rely on the system python3. A very simple way to do this, common in
-scientific computing, is to use `Anaconda<https://conda.io/miniconda.html>`_.
+scientific computing, is to use [Anaconda](https://conda.io/miniconda.html).
 This installation will create a seperate python program on your computer which
 is run by the user instead of the system default. In this way the system is
 happy (it get an older, stable version), and the user is happy (with a newer,
@@ -23,7 +23,7 @@ tool conda, i.e.
 
 There is another package manager which does ostensibly the same thing, pip.
 When the conda installer can't find a package, or if you can not install
-`Anaconda<https://conda.io/miniconda.html>`_, pip is the next best thing. Under
+[Anaconda](https://conda.io/miniconda.html), pip is the next best thing. Under
 no circumstances should you belive anyone who tells you to use the package
 manager easy_install.
 
@@ -66,21 +66,21 @@ This is installed by default because it is straight forward with pip.
 Logitech controller
 ^^^^^^^^^^^^^^^^^^^
 To install the controller package first follow the install instructions for
-`cython-hidapi <https://github.com/trezor/cython-hidapi>`_.
+[cython-hidapi](https://github.com/trezor/cython-hidapi).
 
 Zed camera
 ^^^^^^^^^^
-1) To install the zed package first follow the install instructions for
-`pyzed <https://github.com/stereolabs/zed-python>`_.
+1. To install the zed package first follow the install instructions for
+[pyzed](https://github.com/stereolabs/zed-python).
 
-2) Install opencv. This is simple with conda
+2. Install opencv. This is simple with conda
 
 .. code-block:: bash
 
     conda install opencv
 
 If conda is not available,
-`Manuel Ignacio Lopez Quintero <http://milq.github.io/install-opencv-ubuntu-debian/>`_
+[Manuel Ignacio Lopez Quintero](http://milq.github.io/install-opencv-ubuntu-debian/)_
 has detailed instructions on alternative install methods.
 
 Documentation
