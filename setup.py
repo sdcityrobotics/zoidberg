@@ -9,10 +9,7 @@ setup(name='fish_hawk',
       license='MIT',
       packages=['fish_hawk'],
       install_requires=[
-          'numpy',
           'pymavlink',
           'pyserial',
-          'setuptools',
-          'pillow'
       ],
       zip_safe=False)

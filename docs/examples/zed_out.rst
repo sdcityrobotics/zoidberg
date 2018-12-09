@@ -9,6 +9,7 @@ Display zed camera image (from left camera) and depth map in real time.
 
     from fish_hawk import ZedNode, pause
     from time import time
+    import cv2
 
     update_period = 0.05
     runzed = ZedNode()
@@ -16,7 +17,7 @@ Display zed camera image (from left camera) and depth map in real time.
         print("starting up communication with Zed camera")
         runzed.isactive(True)
         runzed.print_camera_information()
-        while True: #waiting for 'q'
+        while True:
             loop_start = time()
             isnew = runzed.check_readings()
             if isnew:
