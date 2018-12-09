@@ -13,10 +13,6 @@ setup(name='fish_hawk',
           'pymavlink',
           'pyserial',
           'setuptools',
-          'hidapi'
+          'pillow'
       ],
-      extras_require={
-          'controller': ["hidapi"],
-          'zed': ["pyzed", "cv2", "pillow"],
-          },
       zip_safe=False)

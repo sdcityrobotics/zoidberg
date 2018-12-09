@@ -51,8 +51,14 @@ def read_messages(mav_obj):
         #msg = mav_obj.recv_match(type='GLOBAL_POSITION_INT', blocking=True)
         #msg = mav_obj.recv_match(type='SCALED_IMU2', blocking=True)
         #msg = mav_obj.recv_match(type='RAW_IMU', blocking=True)
+
+        # uncomment if statement for parameters
+        #if not(msg.get_msgId() == -1) and msg.name == 'PARAM_VALUE':
+            #print(msg)
+
         print(msg)
         i += 1
+
 
 mav = mavutil.mavlink_connection(device, baud=11520)
 # check that there is a heartbeat
