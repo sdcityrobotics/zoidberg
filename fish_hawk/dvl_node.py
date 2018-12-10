@@ -7,30 +7,29 @@ THIS CODE IS COMPLETELY UNTESTED AND IS MEANT AS A TEMPLATE ONLY
 Interface with the Zoidberg DVL
 """
 import serial, time
+from zoidberg import empty_value
 
 class DVLNode:
     """
     Persistant object to handle serial comunications with DVL over serial
     """
-    def __init__(self):
+    def __init__(self, port):
         """
         Function to Initialize the Serial Port
+        Linux port: '/dev/serial/by-id/usb-FTDI_US232R_FT0TFKDN-if00-port0'
         """
+        self.port = port
         # open a non-blocking serial port
         self._ser = serial.Serial(timeout=0, baudrate=115200)
-        self.port = '/dev/serial/by-id/usb-FTDI_US232R_FT0TFKDN-if00-port0'
-
-        # specify a number that means error
-        self.errNum = 9999.
 
         # DVL readings, initialize to empty values
         self._msg = None
-        self.x_velocity = self.errNum
-        self.y_velocity = self.errNum
-        self.z_velocity = self.errNum
-        self.x_position = self.errNum
-        self.y_position = self.errNum
-        self.altitude = self.errNum
+        self.x_velocity = empty_value
+        self.y_velocity = empty_value
+        self.z_velocity = empty_value
+        self.x_position = empty_value
+        self.y_position = empty_value
+        self.altitude = empty_value
 
     def is_active(self, is_start):
         """Send startup or shutdown message to dvl over serial port"""
@@ -66,9 +65,9 @@ class DVLNode:
             return
         # velocity estimates have error codes
         sl = self._msg.split(bytes(b','))
-        self.x_velocity = float(sl[4]) if sl[4] else self.errNum
-        self.y_velocity = float(sl[5]) if sl[5] else self.errNum
-        self.z_velocity = float(sl[6]) if sl[6] else self.errNum
+        self.x_velocity = float(sl[4]) if sl[4] else empty_value
+        self.y_velocity = float(sl[5]) if sl[5] else empty_value
+        self.z_velocity = float(sl[6]) if sl[6] else empty_value
         # no error codes for x,y & alt coordinates, reading starts at 0
         self.x_position = float(sl[7])
         self.y_position = float(sl[8])

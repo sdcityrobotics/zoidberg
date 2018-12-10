@@ -14,14 +14,15 @@ GitBook](http://www.ardusub.com/developers/pymavlink.html).
 from pymavlink import mavutil
 import sys
 from time import time, sleep
+import numpy
 from fish_hawk import timestamp, PixhawkReading
 from math import pi
 
 class PixhawkNode:
     """Main communication connection between the pixhawk and Zoidberg"""
-    def __init__(self, device):
+    def __init__(self, port):
         """Serial connection specifications
-        device is a string specifying serial port location of the pixhawk
+        port is a string specifying serial port location of the pixhawk
         Linux: '/dev/serial/by-id/usb-3D_Robotics_PX4_FMU_v2.x_0-if00'
         Mac OSX: '/dev/tty.usbmodem1'
         Windows: 'COM7'
@@ -29,7 +30,7 @@ class PixhawkNode:
         """
 
         self.baud = 11520
-        self.device = device
+        self.port = port
         # currently only know how to request all the possible data
         self.data_stream_ID = mavutil.mavlink.MAV_DATA_STREAM_ALL
         self.data_rate = 10  # action rate, Hz
@@ -38,7 +39,12 @@ class PixhawkNode:
         self.message_types = ['AHRS2', 'SERVO_OUTPUT_RAW']
 
         # Define where to save readings
-        self.pix_readings = PixhawkReading()
+        self.timestamp = 0
+        self.heading = 0.0
+        self.depth = 0.0
+        self.rc_command = np.arry([ 0.0 for _ in range(4) ])
+        self.rc_out = np.array([ 0.0 for _ in range(8) ])
+        self.mode = ''
 
         # internal object to maintain io with pixhawk
         self._mav = None
@@ -50,7 +56,7 @@ class PixhawkNode:
         # start/stop the data stream
         if to_arm:
             if self._mav is None:
-                self._mav = mavutil.mavlink_connection(self.device,
+                self._mav = mavutil.mavlink_connection(self.port,
                                                        baud=self.baud)
             else:
                 self._mav.reset()
@@ -95,16 +101,16 @@ class PixhawkNode:
         isnew = self._read_buffer()
         # update sensor readings if a reading has changed
         if isnew:
-            self.pix_readings.timestamp = timestamp()
+            self.timestamp = timestamp()
             if self._messages['AHRS2'] is not None:
-                self.pix_readings.heading = self._messages['AHRS2'].yaw \
+                self.heading = self._messages['AHRS2'].yaw \
                         * 180 / pi
             rc = self._messages['SERVO_OUTPUT_RAW']
             if rc is not None:
-                self.pix_readings.rc_out = [rc.servo1_raw, rc.servo2_raw,
-                                            rc.servo3_raw, rc.servo4_raw,
-                                            rc.servo5_raw, rc.servo6_raw,
-                                            rc.servo7_raw, rc.servo8_raw]
+                self.rc_out = [rc.servo1_raw, rc.servo2_raw, rc.servo3_raw,
+                               rc.servo4_raw, rc.servo5_raw, rc.servo6_raw,
+                               rc.servo7_raw, rc.servo8_raw]
+                self.rc_out = np.array(rc_out)
 
     def change_mode(self, mode):
         """ Change the operation mode of the pixhawk
@@ -156,6 +162,9 @@ class PixhawkNode:
         cmd_side = vel_side * 10
         cmd_dive = vel_dive * 5 + 500
         cmd_turn = vel_turn * 10
+
+        # record most recent command
+        self.rc_command = np.arry([cmd_forward, cmd_side, cmd_dive, cmd_turn])
 
         self._mav.mav.manual_control_send(self._mav.target_system,
                                           cmd_forward,

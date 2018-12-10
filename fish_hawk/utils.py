@@ -1,6 +1,8 @@
 from time import time, sleep
 from datetime import datetime
 
+empyt_value = -9999.
+
 def date_string():
     """Spit back current time information as string (large scale time)"""
     now = datetime.now()
