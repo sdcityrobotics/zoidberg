@@ -13,7 +13,7 @@ groups with the command
 *These next steps will probably require superuser privileges*
 
 Add the current user (newuser in this example, change to match your username)
-to the group plugdev
+to the group dialout
 
 ``usermod -a -G dialout newuser``
 

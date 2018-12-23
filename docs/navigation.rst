@@ -3,8 +3,9 @@ Navigation
 
 Navigation underwater is particularly challenging for a number of reasons, and
 has been a topic of active research for a long time. It will probably remain so
-for some time to come, despite a few DARPA challenges designed to adress the
-issue with ocean scale underwater positioning system using acoustics.
+for some time to come, despite a few `DARPA challenges <https://www.wired.com/2016/05/darpa-wants-underwater-gps-system-seafaring-robots/>`_
+designed to adress the issue with ocean scale underwater positioning system
+using acoustics.
 
 While it is hard to imagine a world without GPS at this point, in the
 1970s acess to the network was restricted, and it was only in the late 90s that
