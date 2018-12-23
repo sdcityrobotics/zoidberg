@@ -12,7 +12,7 @@ used on the `SDCR`_ Zoidberg submarine robot. However, it does not require
 
 The primary interface to the pixhawk is the python package `pymavlink`_, which
 has python2 and provisional python3 support. This package seems to be the most
-widely used python interface, though its it's documentation is spare at times.
+widely used python MAV interface, though it's documentation is spare at times.
 Most of the code used in this package is found in a series of code snippits
 written by `ardusub`_. As such, it may be specific to the ardusub firmware on
 the pixhawk, but quite how is unclear.
