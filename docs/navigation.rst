@@ -8,18 +8,19 @@ designed to adress the issue with ocean scale underwater positioning system
 using acoustics.
 
 While it is hard to imagine a world without GPS at this point, in the
-1970s acess to the network was restricted, and it was only in the late 90s that
+1980s access to the network was restricted, and it was only in 2000 that
 full accuracy of the positioning network was allowed for use by the civilians.
 There are still a few stipulations on use required in all GPS enabled devices
 to prevent its use in ballistic missle systems, and a standing contigency to
 revoke its use in wartime. GPS requires the reception of satilite broadcasts,
 and so it is not possible to use this system underwater beneath a foot or so of
 depth. Interestingly enough, there is a siginifcant interest in GPS free
-navigation in the military since the sucesful Iranian spoofing attack on a US
-drone.
+navigation in the military since the sucesful `Iranian spoofing attack <https://en.wikipedia.org/wiki/Iran%E2%80%93U.S._RQ-170_incident>`_
+on a US drone.
 
 Without the option of GPS, it is important to use other navigation techniques.
-A time tested method is dead-reckoning, which has been used by sailors
+A time tested method is `dead-reckoning <https://en.wikipedia.org/wiki/Dead_reckoning>`_
+, which has been used by sailors
 once they discoved an accurate compass. Dead-reckoning requries the measurement
 of the ships speed, which can be done by dropping a log off the bow and waiting
 for it to pass the stern. With a heading, it is possible to anticipate where

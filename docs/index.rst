@@ -25,15 +25,23 @@ the pixhawk, but quite how is unclear.
 .. _pymavlink: http://github.com/ArduPilot/pymavlink
 .. _ardusub: http://www.ardusub.com/developers/pymavlink.html
 
-Examples
+Sections
 --------
 
-**Getting started**
+**Instrument I/O**
 
 .. toctree::
    :maxdepth: 1
-   :caption: Contents:
+   :caption: Instruments:
 
    pixhawk <pixhawk>
    controller
+
+**General discussion**
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Discussion:
+
    examples
+   strategy <strategy>
