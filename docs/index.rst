@@ -34,7 +34,6 @@ Examples
    :maxdepth: 1
    :caption: Contents:
 
-   index
-   pixhawk
+   pixhawk <pixhawk>
    controller
    examples
