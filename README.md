@@ -10,23 +10,22 @@ to rely on the system python3. A very simple way to do this, common in
 scientific computing, is to use [Anaconda](https://conda.io/miniconda.html).
 This installation will create a seperate python program on your computer which
 is run by the user instead of the system default. In this way the system is
-happy (it get an older, stable version), and the user is happy (with a newer,
+happy (it gets an older, stable version), and the user is happy (with a newer,
 more activly developed version).
 
 The anaconda distribution framework is also great for installing complicated
 packages like opencv. Most common packages are installed using the command line
 tool conda. If you have conda, go ahead and run the line:
 
-    conda install numpy scipy opencv pillow pyserial matplotlib setuptools
+    conda install numpy scipy pyserial matplotlib setuptools ipython
 
-There is another package manager which does ostensibly the same thing, pip.
+There is another package manager which does basicly the same thing, pip.
 When the conda installer can't find a package, or if you can not install
-[Anaconda](https://conda.io/miniconda.html), pip is the next best thing. Under
-no circumstances should you belive anyone who tells you to use the package
-manager easy_install.
+Anaconda, pip is the next best thing. Under no circumstances should you belive
+anyone who tells you to use the package manager easy_install.
 
 If you are using system python3, it is important to install pip3. Really, this
-is a painful thing to do, and probably only really necassary for the computer
+is a painful thing to do, and probably only be necassary for the computer
 on-board the robot, which is esentially a souped up microprocessor.
 
 ## Installation
@@ -72,10 +71,9 @@ To install the controller package first follow the install instructions for
     conda install opencv
 
 If conda is not available,
-[Manuel Ignacio Lopez Quintero](http://milq.github.io/install-opencv-ubuntu-debian/)_
+[Manuel Ignacio Lopez Quintero](http://milq.github.io/install-opencv-ubuntu-debian/)
 has detailed instructions on alternative install methods.
 
 ## Documentation
-
 
 The documentation is hosted on ReadTheDocs at http://fish-hawk.readthedocs.io
