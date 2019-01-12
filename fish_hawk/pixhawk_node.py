@@ -88,7 +88,8 @@ class PixhawkNode:
 
         if to_arm:
             # set mode to stabalize
-            self.change_mode('STABILIZE')
+            #self.change_mode('STABILIZE')
+            pass
         else:
             # close the connection
             self.change_mode('MANUAL')
@@ -165,13 +166,14 @@ class PixhawkNode:
         cmd_turn = vel_turn * 10
 
         # record most recent command
-        self.rc_command = np.arry([cmd_forward, cmd_side, cmd_dive, cmd_turn])
+        self.rc_command = np.array([cmd_forward, cmd_side, cmd_dive, cmd_turn],
+                                   dtype=np.int_)
 
         self._mav.mav.manual_control_send(self._mav.target_system,
-                                          cmd_forward,
-                                          cmd_side,
-                                          cmd_dive,
-                                          cmd_turn,
+                                          self.rc_command[0],
+                                          self.rc_command[1],
+                                          self.rc_command[2],
+                                          self.rc_command[3],
                                           0)
 
     def _read_buffer(self):

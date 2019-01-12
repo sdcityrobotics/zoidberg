@@ -29,12 +29,15 @@ A simple pipe from the logitech controller to the pixhawk apm.
             loop_start = time()
             cntr.check_readings()
             pn.check_readings()
-            print("command out: fb %.2f, lf %.2f ud %.2f turn %.2f"%(
-                cntr.vel_forward, cntr.vel_side, cntr.vel_dive, cntr.vel_turn))
+
             pn.send_rc(vel_forward=cntr.vel_forward,
                     vel_side=cntr.vel_side,
                     vel_dive=cntr.vel_dive,
                     vel_turn=cntr.vel_turn)
+
+            print("servo out: {:d}  {:d}  {:d}  {:d}  {:d}  {:d}".format(
+                *pn.rc_out[:6].astype(np.int_)))
+
             # sleep to maintain constant rate
             pause(loop_start, update_period)
     except SerialException:

@@ -20,7 +20,6 @@ need direction swapping.
 .. _QGroundControl: http://qgroundcontrol.com/
 
 .. code:: python
-
     from time import time
     import numpy as np
     import matplotlib.pyplot as plt
@@ -40,13 +39,22 @@ need direction swapping.
     try:
         # startup data stream
         pn.isactive(True)
+        # change to stablize mode
+        pn.change_mode('STABILIZE')
         motor_out = []
         readtime = []
-        while True:
+
+        total_time = 3  # total collection time, seconds
+        run_start = time()
+        loop_start = run_start
+
+        while run_start + total_time > loop_start:
             loop_start = time()
             pn.check_readings()
-            motor_out.append(np.array(pn.pix_readings.rc_out[:6]))
-            readtime.append(pn.pix_readings.timestamp / 1000)
+            if pn.timestamp == 0 or pn.rc_out[0] == 0:
+                continue
+            motor_out.append(np.array(pn.rc_out[:6]))
+            readtime.append(pn.timestamp / 1000)
             # sleep to maintain constant rate
             pause(loop_start, update_period)
     except SerialException:
@@ -67,4 +75,3 @@ need direction swapping.
     axes[0].set_title('Percent motor command')
     axes[0].legend(chan_odd, ['chan 1', 'chan 3', 'chan 5'])
     axes[1].legend(chan_even, ['chan 2', 'chan 4', 'chan 6'])
-    plt.show(block=False)

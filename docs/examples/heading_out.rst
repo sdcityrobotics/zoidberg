@@ -25,7 +25,7 @@ if only to verify that it is working at all.
         while True:
             loop_start = time()
             pn.check_readings()
-            print("Current heading: %.2f"%pn.pix_readings.heading)
+            print("Current heading: %.2f"%pn.heading)
             # sleep to maintain constant rate
             pause(loop_start, update_period)
     except SerialException:

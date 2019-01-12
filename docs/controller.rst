@@ -16,7 +16,8 @@ to the group plugdev
 
 ``usermod -a -G plugdev newuser``
 
-Then, this `hidapi-udev`_ rule is added to the udev rules directory:
+Then, this `hidapi-udev`_ rule is added to the udev rules directory. The file
+is included in the fish_hawk source in the udev folder:
 
 ``/etc/udev/rules.d``
 
