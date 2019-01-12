@@ -11,10 +11,11 @@ information to Zoidberg.
 A good deal of this code is taken with small modification from the [ArduSub
 GitBook](http://www.ardusub.com/developers/pymavlink.html).
 """
+
 from pymavlink import mavutil
 import sys
 from time import time, sleep
-import numpy
+import numpy as np
 from fish_hawk import timestamp, PixhawkReading
 from math import pi
 
@@ -42,7 +43,7 @@ class PixhawkNode:
         self.timestamp = 0
         self.heading = 0.0
         self.depth = 0.0
-        self.rc_command = np.arry([ 0.0 for _ in range(4) ])
+        self.rc_command = np.array([ 0.0 for _ in range(4) ])
         self.rc_out = np.array([ 0.0 for _ in range(8) ])
         self.mode = ''
 
@@ -110,7 +111,7 @@ class PixhawkNode:
                 self.rc_out = [rc.servo1_raw, rc.servo2_raw, rc.servo3_raw,
                                rc.servo4_raw, rc.servo5_raw, rc.servo6_raw,
                                rc.servo7_raw, rc.servo8_raw]
-                self.rc_out = np.array(rc_out)
+                self.rc_out = np.array(self.rc_out)
 
     def change_mode(self, mode):
         """ Change the operation mode of the pixhawk
