@@ -86,6 +86,15 @@ class PixhawkNode:
             0,
             int(bool(to_arm)), 0, 0, 0, 0, 0, 0)
 
+        self._mav.mav.param_set_send(self._mav.target_system,
+                                    self._mav.target_component,
+                                    b'EK2_MAG_CAL',
+                                    2,
+                                    mavutil.mavlink.MAV_PARAM_TYPE_REAL32)
+        message = self._mav.recv_match(type='PARAM_VALUE', blocking=True).to_dict()
+        print('name: %s\tvalue: %d' % (message['param_id'], message['param_value']))
+
+
         if to_arm:
             # set mode to stabalize
             #self.change_mode('STABILIZE')
@@ -149,6 +158,18 @@ class PixhawkNode:
             print(res.description)
             ack = True
 
+    def compass_switch(self, switch_value):
+        """Turn compass on or off. Switch value is converted to Boolean"""
+        # Set a parameter value TEMPORARILY to RAM.
+        # It will be reset to default on system reboot.
+        self._mav.mav.param_set_send(self._mav.target_system,
+                                     self._mav.target_component,
+                                     b'MAG_ENABLE',
+                                     int(bool(switch_value)),
+                                     mavutil.mavlink.MAV_PARAM_TYPE_REAL32)
+        message = self._mav.recv_match(type='PARAM_VALUE', blocking=True).to_dict()
+        print('name: %s\tvalue: %d' % (message['param_id'], message['param_value']))
+
     def send_rc(self, vel_forward=0., vel_side=0., vel_dive=0., vel_turn=0.):
         """Send RC commands to the pixhawk, inputs are between -100 and 100"""
         # check for valid inputs
@@ -185,7 +206,8 @@ class PixhawkNode:
         while msg is not None:
             isnew = True  # got something
             # save matching message as most recent
-            self._messages[msg.name] = msg
+            if msg.get_msgId() != -1:
+                self._messages[msg.name] = msg
             #msg = self._mav.recv_match(type=self.message_types, blocking=False)
             msg = self._mav.recv_match(blocking=False)
         return isnew
