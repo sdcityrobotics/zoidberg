@@ -7,3 +7,5 @@ Examples
    examples/heading_out
    examples/zed_out
    examples/plot_motorout
+   examples/vision_standard_output
+   examples/mission_pipes

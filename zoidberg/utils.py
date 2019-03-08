@@ -1,17 +1,18 @@
 from time import time, sleep
 from datetime import datetime
 
-empyt_value = -9999.
+# standard to indicate a bad reading or unitialized value
+empty_value = -9999.
 
-def date_string():
-    """Spit back current time information as string (large scale time)"""
-    now = datetime.now()
-    # returns unique time identifier down to second level
-    return now.strftime('__%d_%m_%y__%H_%M_%S')
-
-def timestamp():
-    """create a timestamp from midnight in milliseconds"""
-    timestamp = int(time() * 1000)
+def timestamp(datet=None):
+    """create a standard timestamp string
+    year_JulianDay_Hour_Min_Sec_MS
+    """
+    if datet is None:
+        datet = datetime.now()
+    timestamp = '{0:%y}_{0:%j}_{0:%H}_{0:%M}_{0:%S}_{0:%f}'.format(datet)
+    # only return to ms precision
+    timestamp = timestamp[:-3]
     return timestamp
 
 def pause(start_time, action_period):
