@@ -6,9 +6,8 @@
 Welcome to fish hawk's documentation!
 =====================================
 **Fish hawk** is a simple interface for working with the `pixhawk`_ auto-pilot
-module. It is not designed to offer the full capability of `mavros`_, which is
-used on the `SDCR`_ Zoidberg submarine robot. However, it does not require
-`ROS`_, which has proven to be a difficult install.
+module. It is not designed to offer the full capability of `mavros`_, however,
+it does not require `ROS`_, which has proven to be a difficult install.
 
 The primary interface to the pixhawk is the python package `pymavlink`_, which
 has python2 and provisional python3 support. This package seems to be the most
@@ -35,7 +34,6 @@ Sections
    :caption: Instruments:
 
    pixhawk <pixhawk>
-   controller
 
 **General discussion**
 
