@@ -1,4 +1,4 @@
-# Fish hawk
+# Zoidberg
 
 This package is designed to work with python3. As all of the packages are in
 python, this is expected to work on all 3 major OS: Linux, MacOS and Windows.
@@ -33,7 +33,7 @@ on-board the robot, which is esentially a souped up microprocessor.
 Since this package does not currently live on pypi, it is
 necassary to first clone the source and install from the source folder itself.
 This is done by first using git to clone the source code. Next, navigate to the
-fish-hawk folder on your own computer (this folder has a setup.py file in it),
+zoidberg folder on your own computer (this folder has a setup.py file in it),
 then type
 
     pip install .

@@ -3,12 +3,11 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to fish hawk's documentation!
+Welcome to Zoidbergs's documentation!
 =====================================
-**Fish hawk** is a simple interface for working with the `pixhawk`_ auto-pilot
-module. It is not designed to offer the full capability of `mavros`_, which is
-used on the `SDCR`_ Zoidberg submarine robot. However, it does not require
-`ROS`_, which has proven to be a difficult install.
+**Zoidberg** is a simple interface for working with the `pixhawk`_ auto-pilot
+module. It is not designed to offer the full capability of `mavros`_, however,
+it does not require `ROS`_, which has proven to be a difficult install.
 
 The primary interface to the pixhawk is the python package `pymavlink`_, which
 has python2 and provisional python3 support. This package seems to be the most
@@ -17,7 +16,6 @@ Most of the code used in this package is found in a series of code snippits
 written by `ardusub`_. As such, it may be specific to the ardusub firmware on
 the pixhawk, but quite how is unclear.
 
-.. _fish hawk: http://github.com/nedlrichards/fish_hawk
 .. _SDCR: http://sdcityrobotics.org/
 .. _pixhawk: http://pixhawk.org/
 .. _ROS: http://www.ros.org/
@@ -35,7 +33,6 @@ Sections
    :caption: Instruments:
 
    pixhawk <pixhawk>
-   controller
 
 **General discussion**
 
