@@ -39,7 +39,7 @@ class PixhawkNode:
         self.data_rate = 10  # action rate, Hz
 
         # Define messages of interest from the pixhawk
-        self.message_types = ['AHRS2', 'SERVO_OUTPUT_RAW']
+        self.message_types = ['AHRS2', 'SERVO_OUTPUT_RAW', 'SCALED_PRESSURE2']
 
         # Define where to save readings
         self.timestamp = 0
@@ -125,6 +125,8 @@ class PixhawkNode:
                                rc.servo4_raw, rc.servo5_raw, rc.servo6_raw,
                                rc.servo7_raw, rc.servo8_raw]
                 self.rc_out = np.array(self.rc_out)
+            if self._messages['SCALED_PRESSURE2'].press_diff is not None:
+                self.depth = self._messages['SCALED_PRESSURE2'].press_diff*.01
 
     def change_mode(self, mode):
         """ Change the operation mode of the pixhawk
