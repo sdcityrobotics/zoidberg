@@ -7,13 +7,14 @@ import pyzed.camera as zcam
 import pyzed.types as tp
 import pyzed.core as core
 import pyzed.defines as sl
-from zoidberg import timestamp
-import pillow
+from fish_hawk import timestamp
+import PIL as pl
 
 class ZedNode:
     """Main communication connection between the ZedCamera and Zoidberg"""
     def __init__(self):
         """Basic initilization of camera"""
+        self.init = zcam.PyInitParameters()
         self.cam = zcam.PyZEDCamera()
         self.zed_param = None
         self.zedStatus = None
@@ -23,11 +24,11 @@ class ZedNode:
         self.image = None
         self.depth = None
         self.image_time = None
-
+        
     def isactive(self, is_on):
         """Turn communication with the zed camera on and off"""
-        if is_on:
-            self.zedStatus = self.cam.open()
+        if self.cam.is_opened() == is_on:
+            self.zedStatus = self.cam.open(self.init)
             if self.zedStatus != tp.PyERROR_CODE.PySUCCESS:
                 print(repr(self.zedStatus))
                 self.zedStatus = self.cam.close()
@@ -40,7 +41,7 @@ class ZedNode:
 
     def check_readings(self):
         """Take a picture if avalible"""
-        status = self.cam.grab(self.runtime) #run camera
+        status = self.cam.grab(self.runtime_param) #run camera
         if status == tp.PyERROR_CODE.PySUCCESS:
             isnew = True
             self.image_time = timestamp()
