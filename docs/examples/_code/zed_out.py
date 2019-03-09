@@ -1,4 +1,4 @@
-from fish_hawk import ZedNode, pause
+from zoidberg import ZedNode, pause
 from time import time
 import cv2
 

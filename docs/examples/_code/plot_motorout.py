@@ -2,7 +2,7 @@ from time import time
 import numpy as np
 import matplotlib.pyplot as plt
 from serial import SerialException
-from fish_hawk import PixhawkNode, pause
+from zoidberg import PixhawkNode, pause
 
 update_period = 0.05
 # Mac OSX address
