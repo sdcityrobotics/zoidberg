@@ -7,7 +7,7 @@ import pyzed.camera as zcam
 import pyzed.types as tp
 import pyzed.core as core
 import pyzed.defines as sl
-from fish_hawk import timestamp
+from zoidberg import timestamp
 import pillow
 
 class ZedNode:

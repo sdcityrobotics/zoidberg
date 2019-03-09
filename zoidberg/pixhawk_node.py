@@ -16,7 +16,7 @@ from pymavlink import mavutil
 import sys
 from time import time, sleep
 import numpy as np
-from fish_hawk import timestamp, PixhawkReading
+from zoidberg import timestamp, PixhawkReading
 from math import pi
 
 class PixhawkNode:
@@ -32,8 +32,10 @@ class PixhawkNode:
 
         self.baud = 11520
         self.port = port
-        # currently only know how to request all the possible data
-        self.data_stream_ID = mavutil.mavlink.MAV_DATA_STREAM_ALL
+        # currently only know how to request a lot of data
+        self.data_stream_ID = [mavutil.mavlink.MAV_DATA_STREAM_EXTRA1,
+                               mavutil.mavlink.MAV_DATA_STREAM_RAW_SENSORS]
+        #MAV_DATA_STREAM_ALL
         self.data_rate = 10  # action rate, Hz
 
         # Define messages of interest from the pixhawk
@@ -71,12 +73,15 @@ class PixhawkNode:
         if self._mav is None:
             return
 
+
         # begin transmitting data
-        self._mav.mav.request_data_stream_send(self._mav.target_system,
-                                               self._mav.target_component,
-                                               self.data_stream_ID,
-                                               self.data_rate,
-                                               int(bool(to_arm)))
+
+        for ds in self.data_stream_ID:
+            self._mav.mav.request_data_stream_send(self._mav.target_system,
+                                                   self._mav.target_component,
+                                                   ds,
+                                                   self.data_rate,
+                                                   int(bool(to_arm)))
 
         # Arm/disarm
         self._mav.mav.command_long_send(
@@ -86,19 +91,17 @@ class PixhawkNode:
             0,
             int(bool(to_arm)), 0, 0, 0, 0, 0, 0)
 
-        self._mav.mav.param_set_send(self._mav.target_system,
-                                    self._mav.target_component,
-                                    b'EK2_MAG_CAL',
-                                    2,
-                                    mavutil.mavlink.MAV_PARAM_TYPE_REAL32)
-        message = self._mav.recv_match(type='PARAM_VALUE', blocking=True).to_dict()
-        print('name: %s\tvalue: %d' % (message['param_id'], message['param_value']))
-
 
         if to_arm:
+            self._mav.mav.param_set_send(self._mav.target_system,
+                                        self._mav.target_component,
+                                        b'EK2_MAG_CAL',
+                                        2,
+                                        mavutil.mavlink.MAV_PARAM_TYPE_REAL32)
+            message = self._mav.recv_match(type='PARAM_VALUE', blocking=True).to_dict()
+            print('name: %s\tvalue: %d' % (message['param_id'], message['param_value']))
             # set mode to stabalize
-            #self.change_mode('STABILIZE')
-            pass
+            self.change_mode('STABILIZE')
         else:
             # close the connection
             self.change_mode('MANUAL')

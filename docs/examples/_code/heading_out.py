@@ -1,10 +1,11 @@
-from fish_hawk import PixhawkNode, pause
+from zoidberg import PixhawkNode, pause
 from serial import SerialException
 from time import time
 
 update_period = 0.05
 # Mac OSX address of pixhawk
-device = '/dev/tty.usbmodem1'
+#device = '/dev/tty.usbmodem1'
+device = '/dev/ttyACM0'
 pn = PixhawkNode(device)
 
 # try loop is used to ensure that communication with pixhawk is
