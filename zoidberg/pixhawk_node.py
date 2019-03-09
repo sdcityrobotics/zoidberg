@@ -16,7 +16,7 @@ from pymavlink import mavutil
 import sys
 from time import time, sleep
 import numpy as np
-from zoidberg import timestamp, PixhawkReading
+from zoidberg import timestamp
 from math import pi
 
 class PixhawkNode:
