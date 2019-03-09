@@ -3,38 +3,35 @@ Zed Camera
 ==========
 Standard interface between Zoidberg and zed camera.
 """
-import pyzed.camera as zcam
-import pyzed.types as tp
-import pyzed.core as core
-import pyzed.defines as sl
-from fish_hawk import timestamp
+import pyzed.sl as sl
+from zoidberg import timestamp
 import PIL as pl
 
 class ZedNode:
     """Main communication connection between the ZedCamera and Zoidberg"""
     def __init__(self):
         """Basic initilization of camera"""
-        self.init = zcam.PyInitParameters()
-        self.cam = zcam.PyZEDCamera()
+        self.init = sl.InitParameters()
+        self.cam = sl.Camera()
         self.zed_param = None
         self.zedStatus = None
         self.runtime_param = None
-        self._image = core.PyMat()
-        self._depth = core.PyMat()
+        self._image = sl.Mat()
+        self._depth = sl.Mat()
         self.image = None
         self.depth = None
         self.image_time = None
         
     def isactive(self, is_on):
         """Turn communication with the zed camera on and off"""
-        if self.cam.is_opened() == is_on:
+        if self.cam.is_opened() != is_on:
             self.zedStatus = self.cam.open(self.init)
-            if self.zedStatus != tp.PyERROR_CODE.PySUCCESS:
+            if self.zedStatus != sl.ERROR_CODE.SUCCESS:
                 print(repr(self.zedStatus))
                 self.zedStatus = self.cam.close()
                 raise SystemExit
             else:
-                self.runtime_param = zcam.PyRuntimeParameters()
+                self.runtime_param = sl.RuntimeParameters()
         else:
             self.zedStatus = self.cam.close()
             print(self.zedStatus)
@@ -42,7 +39,7 @@ class ZedNode:
     def check_readings(self):
         """Take a picture if avalible"""
         status = self.cam.grab(self.runtime_param) #run camera
-        if status == tp.PyERROR_CODE.PySUCCESS:
+        if status == sl.ERROR_CODE.SUCCESS:
             isnew = True
             self.image_time = timestamp()
             self.cam.retrieve_image(self._image, sl.PyVIEW.PyVIEW_LEFT)
