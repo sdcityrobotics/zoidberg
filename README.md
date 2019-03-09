@@ -45,21 +45,15 @@ should not require sudo. If it asks for a password, cancel and use
 
 ## Device specific installs
 
-There are currently three devices supported by this package
+There are currently two devices supported by this package
 
 1. pixhawk
-2. controller
-3. zed camera
+2. zed camera
 
 ### Pixhawk
 
 The pixhawk requires the package [pymavlink](https://github.com/ArduPilot/pymavlink).
 This is installed by default because it is straight forward with pip.
-
-### Logitech controller
-
-To install the controller package first follow the install instructions for
-[cython-hidapi](https://github.com/trezor/cython-hidapi).
 
 ### Zed camera
 
@@ -76,4 +70,4 @@ has detailed instructions on alternative install methods.
 
 ## Documentation
 
-The documentation is hosted on ReadTheDocs at http://fish-hawk.readthedocs.io
+The documentation is hosted on ReadTheDocs at https://zoidberg-sdcr.readthedocs.io/en/latest/
