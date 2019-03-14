@@ -19,4 +19,4 @@ need direction swapping.
 
 .. _QGroundControl: http://qgroundcontrol.com/
 
-.. literalinclude:: _code/plot_motorout.py
+.. literalinclude:: ../../zoidberg_cc/plot_motorout.py

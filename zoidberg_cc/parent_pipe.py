@@ -10,7 +10,7 @@ from zoidberg import utils
 
 pipe_name = 'pipe_test'
 
-def parent():
+def child():
     if not os.path.exists(pipe_name):
         print("No pipe exists, exiting")
         return
@@ -50,7 +50,7 @@ if __name__ == "__main__":
         os.mkfifo(pipe_name)
     try:
         while True:
-            parent()
+            child()
             time.sleep(.5)
     finally:
         os.unlink(pipe_name)

@@ -5,4 +5,4 @@ Displaying zed camera output
 
 Display zed camera image (from left camera) and depth map in real time.
 
-.. literalinclude:: _code/zed_out.py
+.. literalinclude:: ../../zoidberg_cc/zed_out.py
