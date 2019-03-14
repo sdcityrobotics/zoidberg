@@ -20,7 +20,7 @@ class ZedNode:
     """Main communication connection between the ZedCamera and Zoidberg"""
     def __init__(self):
         """Basic initilization of camera"""
-        self.init = sl.InitParameters(param)
+        self.init = sl.InitParameters(**param)
         self.cam = sl.Camera()
         self.zed_param = None
         self.zedStatus = None

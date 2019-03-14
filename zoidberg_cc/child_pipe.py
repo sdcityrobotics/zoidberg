@@ -14,8 +14,7 @@ import numpy as np
 
 pipe_name = 'pipe_test'
 
-def child():
-    # blocking wait for data
+def parent():
     with open(pipe_name, 'rb') as infile:
         line = infile.read()
         data_out = pickle.loads(line)
@@ -24,5 +23,5 @@ def child():
 
 if __name__=="__main__":
     for _ in range(10):
-        child()
+        parent()
         time.sleep(.001)

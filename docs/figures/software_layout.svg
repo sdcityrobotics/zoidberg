@@ -17,7 +17,7 @@
    id="svg8"
    inkscape:version="0.92.1 r15371"
    sodipodi:docname="software_layout.svg"
-   inkscape:export-filename="/home/e2richards/Desktop/zoidberg_software.png"
+   inkscape:export-filename="/home/e2richards/zoidberg/docs/figures/zoidberg_software.png"
    inkscape:export-xdpi="96"
    inkscape:export-ydpi="96">
   <defs
@@ -64,21 +64,6 @@
          d="M 0.0,0.0 L 5.0,-5.0 L -12.5,0.0 L 5.0,5.0 L 0.0,0.0 z "
          style="fill-rule:evenodd;stroke:#000000;stroke-width:1pt;stroke-opacity:1;fill:#000000;fill-opacity:1"
          transform="scale(0.8) rotate(180) translate(12.5,0)" />
-    </marker>
-    <marker
-       inkscape:isstock="true"
-       style="overflow:visible;"
-       id="marker5685"
-       refX="0.0"
-       refY="0.0"
-       orient="auto"
-       inkscape:stockid="Arrow1Lend"
-       inkscape:collect="always">
-      <path
-         transform="scale(0.8) rotate(180) translate(12.5,0)"
-         style="fill-rule:evenodd;stroke:#000000;stroke-width:1pt;stroke-opacity:1;fill:#000000;fill-opacity:1"
-         d="M 0.0,0.0 L 5.0,-5.0 L -12.5,0.0 L 5.0,5.0 L 0.0,0.0 z "
-         id="path5683" />
     </marker>
     <marker
        inkscape:isstock="true"
@@ -229,8 +214,8 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="0.91840278"
-     inkscape:cx="157.51985"
-     inkscape:cy="288"
+     inkscape:cx="37.274427"
+     inkscape:cy="283.64461"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -248,7 +233,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -447,24 +432,6 @@
        id="path5579"
        inkscape:connector-curvature="0" />
     <rect
-       id="rect5669"
-       width="48.228584"
-       height="9.3605785"
-       x="141.82872"
-       y="232.72328"
-       style="opacity:1;fill:none;fill-opacity:1;stroke:#000000;stroke-width:0.86438763;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
-    <text
-       xml:space="preserve"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:5.64444447px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
-       x="143.62915"
-       y="238.95419"
-       id="text5673"><tspan
-         sodipodi:role="line"
-         id="tspan5671"
-         x="143.62915"
-         y="238.95419"
-         style="stroke-width:0.26458332">controller_node</tspan></text>
-    <rect
        style="opacity:1;fill:none;fill-opacity:1;stroke:#000000;stroke-width:0.75743526;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        y="251.21725"
        x="117.57813"
@@ -482,11 +449,6 @@
          x="120.13305"
          y="257.42938"
          style="stroke-width:0.26458332">sonar_node</tspan></text>
-    <path
-       style="fill:none;stroke:#000000;stroke-width:0.26458332px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#marker5685)"
-       d="M 141.41758,237.07713 H 21.283708 v -14.98072"
-       id="path5849"
-       inkscape:connector-curvature="0" />
     <path
        style="fill:none;stroke:#000000;stroke-width:0.26458332px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#marker5885)"
        d="M 117.16493,255.80302 H 43.989857 v -34.28279"
@@ -536,17 +498,6 @@
          x="14.216475"
          y="192.32901"
          style="stroke-width:0.26458332;fill:#000080">requires ROS</tspan></text>
-    <text
-       xml:space="preserve"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:5.64444447px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
-       x="144.61559"
-       y="229.78082"
-       id="text6345"><tspan
-         sodipodi:role="line"
-         id="tspan6343"
-         x="144.61559"
-         y="229.78082"
-         style="stroke-width:0.26458332;fill:#000080">requires hidapi</tspan></text>
     <text
        xml:space="preserve"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:5.64444447px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"

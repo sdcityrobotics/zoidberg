@@ -41,4 +41,5 @@ Sections
    :caption: Discussion:
 
    examples
+   standards
    strategy <strategy>
