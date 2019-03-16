@@ -3,6 +3,7 @@ Zed Camera
 ==========
 Standard interface between Zoidberg and zed camera.
 """
+import os
 import pyzed.sl as sl
 from zoidberg import timestamp
 import PIL as pl
@@ -10,7 +11,6 @@ import PIL as pl
 param = dict(camera_resolution=sl.RESOLUTION.RESOLUTION_HD720,
              depth_mode=sl.DEPTH_MODE.DEPTH_MODE_MEDIUM,
              coordinate_units=sl.UNIT.UNIT_METER,
-             coordinate_system=sl.COORDINATE_SYSTEM.COORDINATE_SYSTEM_RIGHT_HANDED_Z_UP_X_FWD,
              camera_fps=10,
              camera_buffer_count_linux=1
         )
@@ -18,8 +18,12 @@ param = dict(camera_resolution=sl.RESOLUTION.RESOLUTION_HD720,
 
 class ZedNode:
     """Main communication connection between the ZedCamera and Zoidberg"""
-    def __init__(self):
+    def __init__(self, writeonly=False):
         """Basic initilization of camera"""
+        self.writeonly = writeonly
+        # create a save directory, drop ms from datestring
+        self.savedir = '_'.join(timestamp().split('_')[:-1])
+        self.savedir = os.path.join(os.getcwd(), self.savedir)
         self.init = sl.InitParameters(**param)
         self.cam = sl.Camera()
         self.zed_param = None
@@ -33,6 +37,9 @@ class ZedNode:
 
     def isactive(self, is_on):
         """Turn communication with the zed camera on and off"""
+        if self.writeonly:
+            raise(ValueError('Node set as write only'))
+
         if is_on and not self.cam.is_opened():
             self.zedStatus = self.cam.open(self.init)
             if self.zedStatus != sl.ERROR_CODE.SUCCESS:
@@ -49,6 +56,10 @@ class ZedNode:
 
     def check_readings(self):
         """Take a picture if avalible"""
+        if not self.cam.is_opened():
+            print('Camera is not open')
+            return
+
         self.zedStatus = self.cam.grab(self.runtime_param) #run camera
         if self.zedStatus == sl.ERROR_CODE.SUCCESS:
             isnew = True
@@ -63,10 +74,9 @@ class ZedNode:
 
     def save_image(self, save_folder):
         """Save current image to file"""
-        pass
-
-    def print_camera_information(self):
-        """Print out some pertinent information"""
-        print("Current Zed camera information:")
-        print("Resolution: {0}, {1}.".format(round(self.cam.get_resolution().width, 2), self.cam.get_resolution().height))
-        print("Camera FPS: {0}.".format(self.cam.get_camera_fps()))
+        if not os.path.isdir(self.savedir):
+            os.makedirs(self.savedir)
+        imname = 'img_' + self.image_time + '.jpeg'
+        depthname = 'depth_' + self.image_time + '.jpeg'
+        self._image.write(os.path.join(self.savedir, imname))
+        self._depth.write(os.path.join(self.savedir, depthname))
