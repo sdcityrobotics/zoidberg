@@ -72,7 +72,7 @@ class ZedNode:
             isnew = False
         return isnew
 
-    def save_image(self, save_folder):
+    def save_image(self):
         """Save current image to file"""
         if not os.path.isdir(self.savedir):
             os.makedirs(self.savedir)
