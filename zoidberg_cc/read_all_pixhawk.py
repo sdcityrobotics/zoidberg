@@ -24,8 +24,8 @@ from pymavlink import mavutil
 #device = device.pop()
 
 # Mac address
-#device = '/dev/tty.usbmodem1'
-device = '/dev/ttyACM0'
+device = '/dev/tty.usbmodem1'
+#device = '/dev/ttyACM0'
 
 # currently only know how to request all the possible data
 data_stream_ID = mavutil.mavlink.MAV_DATA_STREAM_ALL
@@ -83,10 +83,9 @@ try:
     read_messages(mav)
 finally:
     # close the connection
-    for ds in data_stream_ID:
-        mav.mav.request_data_stream_send(mav.target_system,
-                                        mav.target_component,
-                                        ds,
-                                        data_rate,
-                                        0)
+    mav.mav.request_data_stream_send(mav.target_system,
+                                    mav.target_component,
+                                    data_stream_ID,
+                                    data_rate,
+                                    0)
     mav.close()
