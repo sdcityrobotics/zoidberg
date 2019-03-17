@@ -11,7 +11,7 @@ information to Zoidberg.
 A good deal of this code is taken with small modification from the [ArduSub
 GitBook](http://www.ardusub.com/developers/pymavlink.html).
 """
-
+import os
 from pymavlink import mavutil
 import sys
 from time import time, sleep
@@ -33,8 +33,7 @@ class PixhawkNode:
         self.baud = 11520
         self.port = port
         # currently only know how to request a lot of data
-        self.data_stream_ID = [mavutil.mavlink.MAV_DATA_STREAM_EXTRA1,
-                               mavutil.mavlink.MAV_DATA_STREAM_RAW_SENSORS]
+        self.data_stream_ID = mavutil.mavlink.MAV_DATA_STREAM_ALL
         #MAV_DATA_STREAM_ALL
         self.data_rate = 10  # action rate, Hz
 
@@ -42,7 +41,7 @@ class PixhawkNode:
         self.message_types = ['AHRS2', 'SERVO_OUTPUT_RAW', 'SCALED_PRESSURE2']
 
         # Define where to save readings
-        self.timestamp = 0
+        self.timestamp = timestamp()
         self.heading = 0.0
         self.depth = 0.0
         self.rc_command = np.array([ 0.0 for _ in range(4) ])
@@ -76,12 +75,11 @@ class PixhawkNode:
 
         # begin transmitting data
 
-        for ds in self.data_stream_ID:
-            self._mav.mav.request_data_stream_send(self._mav.target_system,
-                                                   self._mav.target_component,
-                                                   ds,
-                                                   self.data_rate,
-                                                   int(bool(to_arm)))
+        self._mav.mav.request_data_stream_send(self._mav.target_system,
+                                                self._mav.target_component,
+                                                self.data_stream_ID,
+                                                self.data_rate,
+                                                int(bool(to_arm)))
 
         # Arm/disarm
         self._mav.mav.command_long_send(
@@ -90,7 +88,6 @@ class PixhawkNode:
             mavutil.mavlink.MAV_CMD_COMPONENT_ARM_DISARM,
             0,
             int(bool(to_arm)), 0, 0, 0, 0, 0, 0)
-
 
         if to_arm:
             self._mav.mav.param_set_send(self._mav.target_system,
@@ -125,8 +122,10 @@ class PixhawkNode:
                                rc.servo4_raw, rc.servo5_raw, rc.servo6_raw,
                                rc.servo7_raw, rc.servo8_raw]
                 self.rc_out = np.array(self.rc_out)
-            if self._messages['SCALED_PRESSURE2'].press_diff is not None:
-                self.depth = self._messages['SCALED_PRESSURE2'].press_diff*.01
+            sp_msg = self._messages['SCALED_PRESSURE2']
+            if sp_msg is not None:
+                # converte from hPa to dBar
+                self.depth = sp_msg.press_diff * .01
 
     def change_mode(self, mode):
         """ Change the operation mode of the pixhawk
@@ -163,18 +162,6 @@ class PixhawkNode:
             print(res.description)
             ack = True
 
-    def compass_switch(self, switch_value):
-        """Turn compass on or off. Switch value is converted to Boolean"""
-        # Set a parameter value TEMPORARILY to RAM.
-        # It will be reset to default on system reboot.
-        self._mav.mav.param_set_send(self._mav.target_system,
-                                     self._mav.target_component,
-                                     b'MAG_ENABLE',
-                                     int(bool(switch_value)),
-                                     mavutil.mavlink.MAV_PARAM_TYPE_REAL32)
-        message = self._mav.recv_match(type='PARAM_VALUE', blocking=True).to_dict()
-        print('name: %s\tvalue: %d' % (message['param_id'], message['param_value']))
-
     def send_rc(self, vel_forward=0., vel_side=0., vel_dive=0., vel_turn=0.):
         """Send RC commands to the pixhawk, inputs are between -100 and 100"""
         # check for valid inputs
@@ -201,6 +188,18 @@ class PixhawkNode:
                                           self.rc_command[2],
                                           self.rc_command[3],
                                           0)
+
+    def log(self, episode_name):
+        """Save current state to a log file"""
+        if not os.path.isdir(episode_name):
+            os.makedirs(episode_name)
+        save_name = os.path.join(episode_name, 'mission_log.txt')
+        state = self.timestamp + ', {:.3f}, {:.3f}'.format(
+                  self.heading, self.depth)
+        state += ', ' + np.array_str(self.rc_out) + '\n'
+
+        with open(save_name, 'a') as f:
+            f.write(state)
 
     def _read_buffer(self):
         """Basic loop, handles incomming comms, outgoing comms, and logging"""

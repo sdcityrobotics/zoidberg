@@ -2,23 +2,24 @@ from time import time
 import numpy as np
 import matplotlib.pyplot as plt
 from serial import SerialException
-from zoidberg import PixhawkNode, pause
+from zoidberg import PixhawkNode, pause, episode
 
 update_period = 0.05
 # Mac OSX address
-#device = '/dev/tty.usbmodem1'
+device = '/dev/tty.usbmodem1'
 # Linux address
-device = '/dev/ttyACM0'
+#device = '/dev/ttyACM0'
 
+runnum = episode()
 pn = PixhawkNode(device)
-
+pn.isactive(True)
 # try loop is used to ensure that communication with pixhawk is
 # terminated.
 try:
     # startup data stream
     pn.isactive(True)
     # change to stablize mode
-    pn.change_mode('STABILIZE')
+    pn.change_mode('MANUAL')
     motor_out = []
     readtime = []
 
@@ -29,10 +30,8 @@ try:
     while run_start + total_time > loop_start:
         loop_start = time()
         pn.check_readings()
-        if pn.timestamp == 0 or pn.rc_out[0] == 0:
-            continue
-        motor_out.append(np.array(pn.rc_out[:6]))
-        readtime.append(pn.timestamp / 1000)
+        pn.send_rc(vel_dive=80)
+        pn.log(runnum)
         # sleep to maintain constant rate
         pause(loop_start, update_period)
 except SerialException:
@@ -42,14 +41,4 @@ finally:
     print('Shutting down communication')
     pn.isactive(False)
 
-motor_out = np.array(motor_out)
-readtime = np.array(readtime)
 
-fig, axes = plt.subplots(2, 1, sharex=True)
-chan_odd = axes[0].plot(readtime - readtime[0], motor_out[:, [0, 2, 4]])
-chan_even = axes[1].plot(readtime - readtime[0], motor_out[:, [1, 3, 5]])
-
-axes[1].set_xlabel('time, s')
-axes[0].set_title('Percent motor command')
-axes[0].legend(chan_odd, ['chan 1', 'chan 3', 'chan 5'])
-axes[1].legend(chan_even, ['chan 2', 'chan 4', 'chan 6'])

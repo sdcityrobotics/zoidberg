@@ -1,3 +1,4 @@
+import os
 from time import time, sleep
 from datetime import datetime
 
@@ -20,3 +21,8 @@ def pause(start_time, action_period):
     tsleep = start_time + action_period - time()
     if tsleep > 0:
         sleep(tsleep)
+
+def episode():
+    """Return a folder name for a mission"""
+    savedir = '_'.join(timestamp().split('_')[:-1])
+    return 'episode_' + savedir

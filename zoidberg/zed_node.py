@@ -6,7 +6,7 @@ Standard interface between Zoidberg and zed camera.
 import os
 import pyzed.sl as sl
 from zoidberg import timestamp
-import PIL as pl
+from numpy import save as array_save
 
 param = dict(camera_resolution=sl.RESOLUTION.RESOLUTION_HD720,
              depth_mode=sl.DEPTH_MODE.DEPTH_MODE_MEDIUM,
@@ -72,11 +72,12 @@ class ZedNode:
             isnew = False
         return isnew
 
-    def save_image(self):
+    def log(self, episode_name):
         """Save current image to file"""
-        if not os.path.isdir(self.savedir):
-            os.makedirs(self.savedir)
+        save_path = os.path.join(episode_name, 'stills')
+        if not os.path.isdir(save_path):
+            os.makedirs(save_path)
         imname = 'img_' + self.image_time + '.jpeg'
         depthname = 'depth_' + self.image_time + '.jpeg'
-        self._image.write(os.path.join(self.savedir, imname))
-        self._depth.write(os.path.join(self.savedir, depthname))
+        self._image.write(os.path.join(save_path, imname))
+        array_save(os.path.join(save_path, depthname), depth=self.depth)
