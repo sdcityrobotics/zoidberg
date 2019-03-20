@@ -9,7 +9,7 @@ setup(name='zoidberg',
       license='MIT',
       packages=['zoidberg'],
       install_requires=[
-          'pymavlink',
+          'pymavlink>=2.3.4',
           'pyserial',
       ],
       zip_safe=False)
