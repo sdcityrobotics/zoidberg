@@ -6,7 +6,8 @@ Standard interface between Zoidberg and zed camera.
 import os
 import pyzed.sl as sl
 from zoidberg import timestamp
-from numpy import save as array_save
+from numpy import savez as array_save
+from PIL import Image
 
 param = dict(camera_resolution=sl.RESOLUTION.RESOLUTION_HD720,
              depth_mode=sl.DEPTH_MODE.DEPTH_MODE_MEDIUM,
@@ -33,6 +34,7 @@ class ZedNode:
         self._depth = sl.Mat()
         self.image = None
         self.depth = None
+        self.max_depth = 10  # max depth in map, meters
         self.image_time = None
 
     def isactive(self, is_on):
@@ -68,6 +70,10 @@ class ZedNode:
             self.cam.retrieve_measure(self._depth, sl.MEASURE.MEASURE_DEPTH)
             self.image = self._image.get_data()
             self.depth = self._depth.get_data()
+            # remove nans from depth map
+            self.depth[np.isnan(depth)] = self.max_depth
+            # limit maximal value of depth map
+            self.depth[self.depth > self.max_depth] = self.max_depth
         else:
             isnew = False
         return isnew
@@ -78,6 +84,11 @@ class ZedNode:
         if not os.path.isdir(save_path):
             os.makedirs(save_path)
         imname = 'img_' + self.image_time + '.jpeg'
-        depthname = 'depth_' + self.image_time + '.jpeg'
+        depthname = 'depth_' + self.image_time + '.npz'
         self._image.write(os.path.join(save_path, imname))
-        array_save(os.path.join(save_path, depthname), depth=self.depth)
+        # convert from floating point numbers to integers before save
+        save_depth = depth * 255 / self.max_depth
+        save_depth = save_depth.astype(np.int8)
+        save_depth = Image.fromarray(save_depth)
+        save_depth = save_depth.convert("L")
+        save_depth.save(os.path.join(save_path, depthname))
