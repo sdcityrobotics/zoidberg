@@ -9,6 +9,7 @@ from zoidberg import timestamp, write_pipe
 from numpy import savez as array_save
 import pickle
 from PIL import Image
+import numpy as np
 
 param = dict(camera_resolution=sl.RESOLUTION.RESOLUTION_HD720,
              depth_mode=sl.DEPTH_MODE.DEPTH_MODE_MEDIUM,
@@ -53,9 +54,6 @@ class ZedNode:
             print("Input to node is another zed node, not the camera")
             return
 
-        if self.writeonly:
-            raise(ValueError('Node set as write only'))
-
         if is_on and not self.cam.is_opened():
             self.zedStatus = self.cam.open(self.init)
             if self.zedStatus != sl.ERROR_CODE.SUCCESS:
@@ -88,13 +86,13 @@ class ZedNode:
             self.image = self._image.get_data()
             self.depth = self._depth.get_data()
             # remove nans from depth map
-            self.depth[np.isnan(depth)] = self.max_depth
+            self.depth[np.isnan(self.depth)] = self.max_depth
             # limit maximal value of depth map
             self.depth[self.depth > self.max_depth] = self.max_depth
             # convert from float to int8
             self.depth = self.depth * 255 / self.max_depth
-            self.depth = self.depth.astype(np.int8)
-            self.serialize()
+            self.depth = self.depth.astype(np.uint8)
+            #self.serialize()
         else:
             isnew = False
         return isnew
@@ -105,14 +103,14 @@ class ZedNode:
         if not os.path.isdir(save_path):
             os.makedirs(save_path)
         imname = 'img_' + self.image_time + '.jpeg'
-        depthname = 'depth_' + self.image_time + '.npz'
+        depthname = 'depth_' + self.image_time + '.jpeg'
         self._image.write(os.path.join(save_path, imname))
         # convert from floating point numbers to integers before save
         save_depth = Image.fromarray(self.depth)
         save_depth = save_depth.convert("L")
         save_depth.save(os.path.join(save_path, depthname))
 
-    def serialize():
+    def serialize(self):
         """serialize or unserialize image data. Used to share data across pipes
         """
         # use a blocking read from the pipe
@@ -121,7 +119,7 @@ class ZedNode:
             # check that the pipe exists
             if not os.path.exists(self.input_pipe):
                 print("No input pipe exists")
-                continue
+                # continue
 
             # load data from pipe, update relevant variables
             with open(self.input_pipe, 'rb') as infile:
