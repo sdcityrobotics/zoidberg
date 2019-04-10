@@ -9,8 +9,9 @@ try:
     while True:
         isnew = zn.check_readings()
         if isnew:
-            #cv2.imshow("image", zn.image)
-            #cv2.imshow("depth", zn.depth)
+            cv2.imshow("image", zn.image)
+            cv2.imshow("depth", zn.depth)
+            cv2.waitKey(0)
             zn.log(runnum)
 finally:
     print("Shutting down communication with Zed camera")
