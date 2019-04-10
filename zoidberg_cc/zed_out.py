@@ -6,7 +6,6 @@ zn = ZedNode()
 try:
     print("starting up communication with Zed camera")
     zn.isactive(True)
-    zn.print_camera_information()
     while True:
         isnew = zn.check_readings()
         if isnew:
