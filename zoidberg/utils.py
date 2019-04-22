@@ -27,30 +27,15 @@ def episode():
     savedir = '_'.join(timestamp().split('_')[:-1])
     return 'episode_' + savedir
 
-def write_pipe(pipe_name, byte_stream):
-    """write byte_stream to pipe, clears any existing data in pipe before write
+def heading_diff(desired_heading, current_heading):
+    """Compute the shortest difference between two headings
+    Accounts for the discontinuity at 359/0
     """
-    # check that the pipe exists
-    if not os.path.exists(pipe_name):
-        print("No pipe exists, exiting")
-        return
-
-    #Make sure that the pipe is cleared before putting new data out
-    try:
-        pipe = os.open(pipe_name, os.O_RDONLY | os.O_NONBLOCK)
-        line = os.read(pipe, 0)
-    except OSError as err:
-        # assume this error indicates that the pipe has no data in it
-        pass
-    finally:
-        os.close(pipe)
-
-    # Dump latest data to pipe
-    try:
-        pipe = os.open(pipe_name, os.O_WRONLY | os.O_NONBLOCK)
-        os.write(pipe, byte_stream)
-    except OSError as err:
-        # assumes this error indicates no consumer is connected to pipe
-        pass
-    finally:
-        os.close(pipe)
+    hdiff = desired_heading - current_heading
+    # handle 0/360 change at magnetic north
+    if abs(hdiff) > 180:
+        if hdiff < 0:
+            hdiff += 360
+        else:
+            hdiff -= 360
+    return hdiff

@@ -16,7 +16,7 @@ from pymavlink import mavutil
 import sys
 from time import time, sleep
 import numpy as np
-from zoidberg import timestamp
+from zoidberg import timestamp, empty_value
 from math import pi
 
 class PixhawkNode:
@@ -42,10 +42,10 @@ class PixhawkNode:
 
         # Define where to save readings
         self.timestamp = timestamp()
-        self.heading = 0.0
-        self.depth = 0.0
-        self.rc_command = np.array([ 0.0 for _ in range(4) ])
-        self.rc_out = np.array([ 0.0 for _ in range(8) ])
+        self.heading = empty_value
+        self.depth = empty_value
+        self.rc_command = empty_value * np.ones(4, dtype=np.int_)
+        self.rc_out = empty_value * np.ones(8, dtype=np.int_)
         self.mode = ''
 
         # internal object to maintain io with pixhawk
