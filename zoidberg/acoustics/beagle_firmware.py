@@ -5,8 +5,15 @@ Beagle bone acoustic recorder
 This code is meant to run without interruption on the beagle bone black. It
 assumes a there is a bela CTAG cape attached.
 """
+import socket
+import pickle
 import numpy as np
 from math import pi
+import sounddevice as sd
+import queue
+
+HOST = 'localhost'
+PORT = 50007
 
 fs = 96000  # this should be higher than 80000, and a multiple of 1000
 buffer_length = 2 ** 8  # number of samples to process at once from CTAG
@@ -52,6 +59,11 @@ class NarrowBandDigitizer:
         self.twidle = np.exp(1j * 2 * pi * fc / fs * np.arange(winwidth))
         self.twidle *= self.window
 
+        # sounddevice variables
+        self.status = None
+        # queue is a thread safe way to pass data around, good for callbacks
+        self._data = queue.Queue(maxsize=1024)
+
     def process(self, recorded_data):
         """
         Compute single frequency samples from a recorded time series
@@ -78,3 +90,48 @@ class NarrowBandDigitizer:
 
         return np.array(p_atfc)
 
+    def record(self):
+        """open a callback stream with UA101"""
+        kwargs = dict(samplerate=self.samplerate,
+                       blocksize=self.blocksize,
+                       device=self.deviceID,
+                       channels=self.channels,
+                       dtype='float32',
+                       callback=self._callback)
+
+        # open up sound device stream
+        with sd.Stream(**kwargs) as sd_stream:
+            # open up socket for comms off of the board
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+                s.bind((HOST, PORT))
+                s.listen(1)
+                # send latest data whenever client requests it
+                while sd_stream.active:
+                    conn, addr = s.accept()
+                    with conn:
+                        conn.sendall(pickle.dumps(self.data))
+
+    @property
+    def data(self):
+        """The most current readings as a single numpy array"""
+        return np.concatenate(list(self._data))
+
+    def _callback(self, indata, outdata, frames, time, status):
+        """Callback is called each time there is new data on the soundcard"""
+        if status:
+            self.status = status
+
+        # setup input and output as expected
+        outdata.fill(0)
+        curr_data = indata.astype(np.float32_)
+
+        p_atfc = self.process(curr_data)
+
+        # add to current queue. This may not work if the queue is full, but
+        # this should only come up if the main computer is not attached yet
+        try:
+            self._data.put_nowait(p_atfc)
+        except queue.Full:
+            self._data.get()
+            self._data.put_nowait(p_atfc)
