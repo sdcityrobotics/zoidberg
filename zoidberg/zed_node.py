@@ -10,6 +10,7 @@ from numpy import savez as array_save
 import pickle
 from PIL import Image
 import numpy as np
+import cv2
 
 param = dict(camera_resolution=sl.RESOLUTION.RESOLUTION_HD720,
              depth_mode=sl.DEPTH_MODE.DEPTH_MODE_MEDIUM,
@@ -18,16 +19,13 @@ param = dict(camera_resolution=sl.RESOLUTION.RESOLUTION_HD720,
              camera_buffer_count_linux=1
         )
 
-
 class ZedNode:
     """Main communication connection between the ZedCamera and Zoidberg"""
-    def __init__(self, input_pipe=None, output_pipes=None):
+    def __init__(self, input_file=None):
         """Basic initilization of camera"""
-        self.input_pipe = input_pipe
-        # make output pipe a list by default
-        if not isinstance(output_pipes, (list,)):
-            output_pipes = [output_pipes]
-        self.output_pipes = output_pipes
+        self.input_file = input_file
+        self.vid = None
+        self.dep = None
 
         # These are the variables that will be shared across all zed nodes
         self.image_time = None
@@ -46,12 +44,21 @@ class ZedNode:
         self._image = sl.Mat()
         self._depth = sl.Mat()
         self.max_depth = 10  # max depth in map, meters
+        self.codec = cv2.VideoWriter_fourcc(*'DIVX')
+        self.depth_writer = None
+        self.image_writer = None
 
     def isactive(self, is_on):
         """Turn communication with the zed camera on and off"""
         # Check if we should open the camera or not
-        if self.input_pipe is not None:
-            print("Input to node is another zed node, not the camera")
+        if self.input_file is not None:
+            if is_on:
+                self.vid = cv2.VideoCapture(self.input_file + '\\video.avi')
+                self.dep = cv2.VideoCapture(self.input_file + '\\depth.avi')
+                print('Video opened')
+            else:
+                self.vid.release()
+                self.dep.release()
             return
 
         if is_on and not self.cam.is_opened():
@@ -65,13 +72,23 @@ class ZedNode:
         elif not is_on:
             self.zedStatus = self.cam.close()
             print(self.zedStatus)
+            self.depth_writer = None
+            self.image_writer = None
         else:
             print('camera is already on')
 
     def check_readings(self):
         """Take a picture if avalible"""
-        if self.input_pipe is not None:
-            self.serialize()
+        if self.input_file is not None:
+            #get image from video
+            ret, image = self.vid.read()
+            if ret:
+                self.image = image
+            #get depth from video
+            ret, depth = self.dep.read()
+            if ret:
+                self.depth = depth
+            return
 
         if not self.cam.is_opened():
             print('Camera is not open')
@@ -99,9 +116,18 @@ class ZedNode:
 
     def log(self, episode_name):
         """Save current image to file"""
+        if not self.cam.is_opened():
+            return
+        
         save_path = os.path.join(episode_name, 'stills')
         if not os.path.isdir(save_path):
             os.makedirs(save_path)
+            
+        if self.image_writer is None:
+            self.image_writer = cv2.VideoWriter(save_path, self.codec, 10, size)
+        if self.depth_writer is None:
+            self.depth_writer = cv2.VideoWriter(save_path, self.codec, 10, size)
+            
         imname = 'img_' + self.image_time + '.jpeg'
         depthname = 'depth_' + self.image_time + '.jpeg'
         self._image.write(os.path.join(save_path, imname))
@@ -109,31 +135,3 @@ class ZedNode:
         save_depth = Image.fromarray(self.depth)
         save_depth = save_depth.convert("L")
         save_depth.save(os.path.join(save_path, depthname))
-
-    def serialize(self):
-        """serialize or unserialize image data. Used to share data across pipes
-        """
-        # use a blocking read from the pipe
-        if self.input_pipe is not None:
-
-            # check that the pipe exists
-            if not os.path.exists(self.input_pipe):
-                print("No input pipe exists")
-                # continue
-
-            # load data from pipe, update relevant variables
-            with open(self.input_pipe, 'rb') as infile:
-                pin = pickle.load(infile)
-                if len(pin) > 0:
-                    self.image_time = pin[0]
-                    self.image = pin[1]
-                    self.depth = pin[2]
-
-        # write data to any waiting pipes
-        if self.output_pipes is not None:
-            byte_stream = pickle.dumps([self.image_time,
-                                        self.image,
-                                        self.depth])
-            # assume that there can be more than one output pipe
-            for p in self.output_pipes:
-                write_pipe(byte_stream, p)
