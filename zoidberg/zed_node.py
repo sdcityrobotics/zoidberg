@@ -72,8 +72,12 @@ class ZedNode:
         elif not is_on:
             self.zedStatus = self.cam.close()
             print(self.zedStatus)
-            self.depth_writer = None
-            self.image_writer = None
+            if self.depth_writer is not None:
+                self.depth_writer.release()
+                self.image_writer.release()
+                print('Closing video writer')
+                self.depth_writer = None
+                self.image_writer = None
         else:
             print('camera is already on')
 
@@ -109,7 +113,6 @@ class ZedNode:
             # convert from float to int8
             self.depth = self.depth * 255 / self.max_depth
             self.depth = self.depth.astype(np.uint8)
-            #self.serialize()
         else:
             isnew = False
         return isnew
@@ -122,16 +125,25 @@ class ZedNode:
         save_path = os.path.join(episode_name, 'stills')
         if not os.path.isdir(save_path):
             os.makedirs(save_path)
-            
+
         if self.image_writer is None:
-            self.image_writer = cv2.VideoWriter(save_path, self.codec, 10, size)
+            size = self.image.shape[:2]
+            video_name = os.path.join(save_path, 'images.avi')
+            self.image_writer = cv2.VideoWriter(video_name, self.codec, 10, size)
+            self.image_writer.open(video_name, self.codec, 10, size)
+            print('Openning video writer')
         if self.depth_writer is None:
-            self.depth_writer = cv2.VideoWriter(save_path, self.codec, 10, size)
+            size = self.depth.shape[:2]
+            depth_name = os.path.join(save_path, 'depth.avi')
+            self.depth_writer = cv2.VideoWriter(depth_name, self.codec, 10, size)
+            print('Openning video writer')
             
         imname = 'img_' + self.image_time + '.jpeg'
         depthname = 'depth_' + self.image_time + '.jpeg'
-        self._image.write(os.path.join(save_path, imname))
+        self.image_writer.write(self.image)
         # convert from floating point numbers to integers before save
         save_depth = Image.fromarray(self.depth)
         save_depth = save_depth.convert("L")
-        save_depth.save(os.path.join(save_path, depthname))
+        self.depth_writer.write(self.depth)
+        print(self.depth_writer.isOpened())
+        
