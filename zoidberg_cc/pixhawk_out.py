@@ -9,16 +9,19 @@ update_period = 0.05
 device = '/dev/tty.usbmodem1'
 # Linux address
 #device = '/dev/ttyACM0'
+# Windows address
+#device = 'COM3'
 
 runnum = episode()
 pn = PixhawkNode(device)
 pn.isactive(True)
 # try loop is used to ensure that communication with pixhawk is
 # terminated.
+
 try:
     # startup data stream
     pn.isactive(True)
-    # change to stablize mode
+    # change mode
     pn.change_mode('MANUAL')
     motor_out = []
     readtime = []
@@ -34,6 +37,7 @@ try:
         pn.log(runnum)
         # sleep to maintain constant rate
         pause(loop_start, update_period)
+
 except SerialException:
     print('Pixhawk is not connected to %s'%device)
     raise
