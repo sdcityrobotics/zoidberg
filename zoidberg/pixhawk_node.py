@@ -169,25 +169,26 @@ class PixhawkNode:
            or abs(vel_dive) > 100 or abs(vel_turn) > 100:
             print('All command inputs must be between -100 and 100, no command sent')
             return
-        # http://mavlink.org/messages/common#MANUAL_CONTROL
-        # Warning: Because of some legacy workaround, z will work between [0-1000]
-        # where 0 is full reverse, 500 is no output and 1000 is full throttle.
-        # x,y and r will be between [-1000 and 1000].
-        cmd_forward = vel_forward * 10
-        cmd_side = vel_side * 10
-        cmd_dive = vel_dive * 5 + 500
-        cmd_turn = vel_turn * 10
+        # https://mavlink.io/en/messages/common.html#RC_CHANNELS_OVERRIDE
+        cmd_forward = int(vel_forward * 5 + 1500)
+        cmd_side = int(vel_side * 5 + 1500)
+        cmd_dive = int(vel_dive * 5 + 1500)
+        cmd_turn = int(vel_turn * 5 + 1500)
 
         # record most recent command
-        self.rc_command = np.array([cmd_forward, cmd_side, cmd_dive, cmd_turn],
+        self.rc_command = np.array([vel_forward, vel_side, vel_dive, vel_turn],
                                    dtype=np.int_)
+        rc_out = [65535] * 8
+        # channel mapping from
+        # http://www.ardusub.com/operators-manual/rc-input-and-output.html#rc-inputs
+        rc_out[2] = cmd_dive
+        rc_out[3] = cmd_turn
+        rc_out[4] = cmd_forward
+        rc_out[5] = cmd_side
 
-        self._mav.mav.manual_control_send(self._mav.target_system,
-                                          self.rc_command[0],
-                                          self.rc_command[1],
-                                          self.rc_command[2],
-                                          self.rc_command[3],
-                                          0)
+        self._mav.mav.rc_channels_override_send(self._mav.target_system,
+                                                self._mav.target_component,
+                                                *rc_out)
 
     def log(self, episode_name):
         """Save current state to a log file"""
