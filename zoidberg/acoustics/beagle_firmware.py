@@ -134,9 +134,13 @@ class BeagleFirmware:
         b2 = processed_data[1].tobytes()
 
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-            s.connect((HOST, PORT))
-            s.sendall(b1)
-            s.sendall(b2)
+            try:
+                s.connect((HOST, PORT))
+                s.sendall(b1)
+                s.sendall(b2)
+            except ConnectionRefusedError:
+                pass
+
 
 if __name__ == '__main__':
     bb = BeagleFirmware(5000)
