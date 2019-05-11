@@ -97,7 +97,7 @@ class ZedNode:
             ret, depth = self.depth_reader.read()
             if ret:
                 self.depth = depth
-            return
+            return ret
 
         # Once we get to this part of the code we are working with zed camera
         if not self.cam.is_opened():
@@ -125,21 +125,20 @@ class ZedNode:
 
     def log(self, episode_name):
         """Save current image to file"""
-        if not self.image is None:
+        if self.image is None:
             return
 
-        save_path = os.path.join(episode_name, 'zed_out')
-        if not os.path.isdir(save_path):
-            os.makedirs(save_path)
+        if not os.path.isdir(self.savedir):
+            os.makedirs(self.savedir)
 
         if self.image_writer is None:
             size = (self.image.shape[1], self.image.shape[0])
-            video_name = os.path.join(save_path, 'images.avi')
+            video_name = os.path.join(self.savedir, 'images.avi')
             self.image_writer = cv2.VideoWriter(video_name, self.codec, 10, size, True)
 
         if self.depth_writer is None:
             size = (self.depth.shape[1], self.depth.shape[0])
-            depth_name = os.path.join(save_path, 'depth.avi')
+            depth_name = os.path.join(self.savedir, 'depth.avi')
             self.depth_writer = cv2.VideoWriter(depth_name, self.codec, 10, size, False)
 
         # save the current image
