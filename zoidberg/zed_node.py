@@ -4,7 +4,13 @@ Zed Camera
 Standard interface between Zoidberg and zed camera.
 """
 import os
-import pyzed.sl as sl
+
+# Don't require zed library if you don't need it
+try:
+    import pyzed.sl as sl
+except ModuleNotFoundError:
+    pass
+
 from zoidberg import timestamp
 import numpy as np
 import cv2
@@ -36,7 +42,7 @@ class ZedNode:
         self.savedir = os.path.join(os.getcwd(), self.savedir)
 
         # set up camera only if we need to work with live feed
-        if input_dir is not None:
+        if input_dir is None:
             self.init = sl.InitParameters(**param)
             self.cam = sl.Camera()
         else:
