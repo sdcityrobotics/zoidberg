@@ -4,7 +4,7 @@ from scipy.interpolate import interp1d
 from scipy.signal.windows import hann
 import matplotlib.pyplot as plt
 
-from beagle_firmware import NarrowBandDigitizer
+from beagle_firmware import BeagleFirmware
 
 # These paramters are expected to be mostly constant, fixed by competition
 channel_depth = 5
@@ -46,7 +46,7 @@ time_surf = r_surf / c
 time_bottom = r_bottom / c
 
 # time axis of simulated recorded signal
-taxis = np.arange(2 ** 11) / fs
+taxis = np.arange(2 ** 13) / fs
 taxis += time_dir[0] - 300 / fs  # small offset for plotting purposes
 
 # transmitted signal
@@ -65,18 +65,18 @@ x_sig -= sig_ier(taxis[:, None] - time_bottom) / r_bottom
 # create some noise on all channels
 x_sig += np.random.randn(*x_sig.shape) * np.sqrt(noise_level)
 
-nbd = NarrowBandDigitizer(fc)
+nbd = BeagleFirmware(fc)
 
 # compute output on each channel as though it came from the hydrophones
 starti = 0
-buffer_size = 512
+buffer_size = nbd.buffer_size
 num_buffer = int(np.floor(x_sig.shape[0] / buffer_size))
 buff_i = np.arange(num_buffer) * buffer_size
 
 out_data = []
 for i in buff_i:
     p_atfc = nbd.process(x_sig[i: i + buffer_size, :])
-    out_data.append(p_atfc)
+    out_data.append(np.concatenate(p_atfc))
 
 out_data = np.concatenate(out_data)
 

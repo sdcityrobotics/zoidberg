@@ -5,10 +5,7 @@ Standard interface between Zoidberg and zed camera.
 """
 import os
 import pyzed.sl as sl
-from zoidberg import timestamp, write_pipe
-from numpy import savez as array_save
-import pickle
-from PIL import Image
+from zoidberg import timestamp
 import numpy as np
 import cv2
 
@@ -21,11 +18,12 @@ param = dict(camera_resolution=sl.RESOLUTION.RESOLUTION_HD720,
 
 class ZedNode:
     """Main communication connection between the ZedCamera and Zoidberg"""
-    def __init__(self, input_file=None):
+    def __init__(self, input_dir=None):
         """Basic initilization of camera"""
-        self.input_file = input_file
-        self.vid = None
-        self.dep = None
+        # zed node can be setup to read from saved videos
+        self.input_dir = input_dir
+        self.image_reader = None
+        self.depth_reader = None
 
         # These are the variables that will be shared across all zed nodes
         self.image_time = None
@@ -36,13 +34,20 @@ class ZedNode:
         # create a save directory, drop ms from datestring
         self.savedir = '_'.join(timestamp().split('_')[:-1])
         self.savedir = os.path.join(os.getcwd(), self.savedir)
-        self.init = sl.InitParameters(**param)
-        self.cam = sl.Camera()
+
+        # set up camera only if we need to work with live feed
+        if input_dir is not None:
+            self.init = sl.InitParameters(**param)
+            self.cam = sl.Camera()
+        else:
+            self.init = None
+            self.cam = None
+
         self.zed_param = None
         self.zedStatus = None
         self.runtime_param = None
-        self._image = sl.Mat()
-        self._depth = sl.Mat()
+        self._image = None
+        self._depth = None
         self.max_depth = 10  # max depth in map, meters
         self.codec = cv2.VideoWriter_fourcc(*'DIVX')
         self.depth_writer = None
@@ -51,31 +56,31 @@ class ZedNode:
     def isactive(self, is_on):
         """Turn communication with the zed camera on and off"""
         # Check if we should open the camera or not
-        if self.input_file is not None:
+        if self.input_dir is not None:
             if is_on:
-                self.vid = cv2.VideoCapture(self.input_file + '\\video.avi')
-                self.dep = cv2.VideoCapture(self.input_file + '\\depth.avi')
+                vid_path = os.path.join(self.input_dir, 'images.avi')
+                depth_path = os.path.join(self.input_dir, 'depth.avi')
+                self.image_reader = cv2.VideoCapture(vid_path)
+                self.depth_reader = cv2.VideoCapture(depth_path)
                 print('Video opened')
             else:
-                self.vid.release()
-                self.dep.release()
+                self.image_reader.release()
+                self.depth_reader.release()
             return
 
+        # Once we get to this part of the code we are working with zed camera
         if is_on and not self.cam.is_opened():
             self.zedStatus = self.cam.open(self.init)
             if self.zedStatus != sl.ERROR_CODE.SUCCESS:
                 print(repr(self.zedStatus))
                 self.zedStatus = self.cam.close()
                 raise SystemExit
-            else:
-                self.runtime_param = sl.RuntimeParameters(enable_point_cloud=False)
+            self.runtime_param = sl.RuntimeParameters(enable_point_cloud=False)
         elif not is_on:
             self.zedStatus = self.cam.close()
-            print(self.zedStatus)
             if self.depth_writer is not None:
                 self.depth_writer.release()
                 self.image_writer.release()
-                print('Closing video writer')
                 self.depth_writer = None
                 self.image_writer = None
         else:
@@ -83,17 +88,18 @@ class ZedNode:
 
     def check_readings(self):
         """Take a picture if avalible"""
-        if self.input_file is not None:
+        if self.input_dir is not None:
             #get image from video
-            ret, image = self.vid.read()
+            ret, image = self.image_reader.read()
             if ret:
                 self.image = image
             #get depth from video
-            ret, depth = self.dep.read()
+            ret, depth = self.depth_reader.read()
             if ret:
                 self.depth = depth
             return
 
+        # Once we get to this part of the code we are working with zed camera
         if not self.cam.is_opened():
             print('Camera is not open')
             return
@@ -119,31 +125,23 @@ class ZedNode:
 
     def log(self, episode_name):
         """Save current image to file"""
-        if not self.cam.is_opened():
+        if not self.image is None:
             return
-        
-        save_path = os.path.join(episode_name, 'stills')
+
+        save_path = os.path.join(episode_name, 'zed_out')
         if not os.path.isdir(save_path):
             os.makedirs(save_path)
 
         if self.image_writer is None:
-            size = self.image.shape[:2]
+            size = (self.image.shape[1], self.image.shape[0])
             video_name = os.path.join(save_path, 'images.avi')
-            self.image_writer = cv2.VideoWriter(video_name, self.codec, 10, size)
-            self.image_writer.open(video_name, self.codec, 10, size)
-            print('Openning video writer')
+            self.image_writer = cv2.VideoWriter(video_name, self.codec, 10, size, True)
+
         if self.depth_writer is None:
-            size = self.depth.shape[:2]
+            size = (self.depth.shape[1], self.depth.shape[0])
             depth_name = os.path.join(save_path, 'depth.avi')
-            self.depth_writer = cv2.VideoWriter(depth_name, self.codec, 10, size)
-            print('Openning video writer')
-            
-        imname = 'img_' + self.image_time + '.jpeg'
-        depthname = 'depth_' + self.image_time + '.jpeg'
+            self.depth_writer = cv2.VideoWriter(depth_name, self.codec, 10, size, False)
+
+        # save the current image
         self.image_writer.write(self.image)
-        # convert from floating point numbers to integers before save
-        save_depth = Image.fromarray(self.depth)
-        save_depth = save_depth.convert("L")
         self.depth_writer.write(self.depth)
-        print(self.depth_writer.isOpened())
-        
