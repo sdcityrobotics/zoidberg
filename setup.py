@@ -10,7 +10,6 @@ setup(name='zoidberg',
       packages=['zoidberg'],
       install_requires=[
           'pymavlink>=2.3.4',
-          'pyserial',
-          'sounddevice',
+          'pyserial'
       ],
       zip_safe=False)
