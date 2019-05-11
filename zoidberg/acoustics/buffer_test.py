@@ -1,5 +1,5 @@
 import numpy as np
-from port_audio_record import BeagleFirmware
+from beagle_firmware import BeagleFirmware
 import matplotlib.pyplot as plt
 
 beags = BeagleFirmware(5000)
