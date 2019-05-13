@@ -74,7 +74,6 @@ class PixhawkNode:
 
 
         # begin transmitting data
-
         self._mav.mav.request_data_stream_send(self._mav.target_system,
                                                 self._mav.target_component,
                                                 self.data_stream_ID,
@@ -82,6 +81,7 @@ class PixhawkNode:
                                                 int(bool(to_arm)))
 
         # Arm/disarm
+        print('Arm mode set to {}'.format(to_arm))
         self._mav.mav.command_long_send(
             self._mav.target_system,
             self._mav.target_component,
@@ -90,6 +90,7 @@ class PixhawkNode:
             int(bool(to_arm)), 0, 0, 0, 0, 0, 0)
 
         if to_arm:
+            print('Turning compass from 3-D to 2-D readings')
             self._mav.mav.param_set_send(self._mav.target_system,
                                         self._mav.target_component,
                                         b'EK2_MAG_CAL',
@@ -103,6 +104,7 @@ class PixhawkNode:
             # close the connection
             self.change_mode('MANUAL')
             self._mav.close()
+        print()
 
     def check_readings(self):
         """Update the instrument readings to the latest"""
@@ -114,8 +116,12 @@ class PixhawkNode:
         if isnew:
             self.timestamp = timestamp()
             if self._messages['AHRS2'] is not None:
-                self.heading = self._messages['AHRS2'].yaw \
-                        * 180 / pi
+                # convert from radians to degrees
+                yaw_deg = self._messages['AHRS2'].yaw * 180 / pi
+                # convert from (-180, 180) range to (0, 360) range
+                if yaw_deg < 0:
+                    yaw_deg += 360
+                self.heading = yaw_deg
             rc = self._messages['SERVO_OUTPUT_RAW']
             if rc is not None:
                 self.rc_out = [rc.servo1_raw, rc.servo2_raw, rc.servo3_raw,
@@ -158,8 +164,10 @@ class PixhawkNode:
                 continue
 
             # Print the ACK result !
+            print('Changing mode to '+ mode)
             res = mavutil.mavlink.enums['MAV_RESULT'][ack_msg['result']]
             print(res.description)
+            print()
             ack = True
 
     def send_rc(self, vel_forward=0., vel_side=0., vel_dive=0., vel_turn=0.):
@@ -195,7 +203,7 @@ class PixhawkNode:
         if not os.path.isdir(episode_name):
             os.makedirs(episode_name)
         save_name = os.path.join(episode_name, 'mission_log.txt')
-        state = self.timestamp + ', {:.3f}, {:.3f}'.format(
+        state = self.timestamp + ', {:.03f}, {:.03f}'.format(
                   self.heading, self.depth)
         state += ', ' + np.array_str(self.rc_out) + '\n'
 
@@ -212,7 +220,8 @@ class PixhawkNode:
             isnew = True  # got something
             # save matching message as most recent
             if msg.get_msgId() != -1:
-                self._messages[msg.name] = msg
+                if msg.name in self.message_types:
+                    self._messages[msg.name] = msg
             #msg = self._mav.recv_match(type=self.message_types, blocking=False)
             msg = self._mav.recv_match(blocking=False)
         return isnew

@@ -19,7 +19,7 @@ total_time = 30  # total task time, seconds
 target_heading = 80  # random choice
 r_P = 3  # proportionality constant for heading correction
 r_max = 70  # max rate of turn
-r_tol = 2  # if we are within this number of degrees, we have succeeded
+r_tol = 5  # if we are within this number of degrees, we have succeeded
 
 # create dictionary of nodes needed for this task
 node_dict = {'pn':pn}
