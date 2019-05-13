@@ -31,7 +31,7 @@ class ZedNode:
         self.image_reader = None
         self.depth_reader = None
 
-        # These are the variables that will be shared across all zed nodes
+        # These are the variables that will be used by mission
         self.image_time = None
         self.image = None
         self.depth = None
@@ -45,15 +45,17 @@ class ZedNode:
         if input_dir is None:
             self.init = sl.InitParameters(**param)
             self.cam = sl.Camera()
+            self._image = sl.Mat()
+            self._depth = sl.Mat()
         else:
             self.init = None
             self.cam = None
+            self._image = None
+            self._depth = None
 
         self.zed_param = None
         self.zedStatus = None
         self.runtime_param = None
-        self._image = None
-        self._depth = None
         self.max_depth = 10  # max depth in map, meters
         self.codec = cv2.VideoWriter_fourcc(*'DIVX')
         self.depth_writer = None
