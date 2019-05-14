@@ -124,6 +124,7 @@ class BeagleFirmware:
                                    recorded_data[:self.new_tail_size, :]])
         # record tail values for next time around
         self.old_tail = recorded_data[self.tail_window_i[0]: ,:].copy()
+        # compute acoustic values as a vector multiply
         tail_atfc = self.tail_filter @ all_tail
         main_atfc = self.main_filter @ recorded_data
         return [tail_atfc, main_atfc]
@@ -152,17 +153,12 @@ if __name__ == '__main__':
                         input_device_index=7,
                         input=True,
                         frames_per_buffer=bb.buffer_size)
-        print("* recording")
-        ts = time.time()
-        frames = []
-
-        for i in range(int(5 * bb.fs / bb.buffer_size)):
+        while True:
             data = stream.read(bb.buffer_size, exception_on_overflow=False)
             asnp = bb.buf_to_np(data)
             p_atfc = bb.process(asnp)
-            frames.append(asnp)
+            bb.dump(p_atfc)
 
-        print("* done recording")
     finally:
         stream.stop_stream()
         stream.close()
