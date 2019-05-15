@@ -45,15 +45,28 @@ def start_socket(stop, host):
 
 class AcousticsNode:
     """Comms node to beagle bone"""
-    def __init__(self, tcp_host):
+    def __init__(self, tcp_host, filepath=None):
         """Start up socket communcation with beagle bone"""
         self.host = tcp_host
+        self.filepath = filepath
+        # most current reading
         self.curr_read = None
+        # used when opening a log file
+        self.all_read = None
+        self.curr_index = 0
+        self.read_step = 20  # sort of made up, readings per check
+
+        # recording specifications
         self.datatype = np.complex64  # data type of each reading
         self.num_channels = 3  # number of acoustics channels
 
     def isactive(self, to_stream):
         """startup/shutdown communciations with beagle bone"""
+        # don't do anything if we are just reading from a log file
+        if self.filepath is None:
+            return
+
+        # open up a TCP server for comms with Beaglebone
         if to_stream:
             stop_threads = False
             # startup tcp server in its own thread
@@ -66,6 +79,19 @@ class AcousticsNode:
 
     def check_readings(self):
         """Read most current data from buffer"""
+        # loading data from log file
+        if self.filepath is not None:
+            if self.all_read is None:
+                return False
+            else:
+                ei = self.curr_indexi + self.read_step
+                if ei >= self.all_read.shape[0]:
+                    return False
+                self.curr_read = self.all_read[self.curr_index: ei, :]
+                self.curr_index = ei
+                return True
+
+        # stream of data from beaglebone
         # check that there is new data avalible
         isnew = not all_data.empty()
 
@@ -83,5 +109,14 @@ class AcousticsNode:
             os.makedirs(episode_name)
         save_name = os.path.join(episode_name, 'acoustics.dat')
 
-        with open(save_name, 'ab') as f:
+        with open(save_name, 'ab+') as f:
             f.write(self.curr_read.tobytes())
+
+    def load(self, episode_name):
+        """load from log file to current reading"""
+        with open(savefile, 'rb') as f:
+            bytesin = f.read()
+
+        tout = np.frombuffer(bytesin, dtype=self.datatype)
+        tout = tout.reshape((-1, num_channels))
+        self.all_read = tout
