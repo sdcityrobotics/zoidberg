@@ -118,7 +118,11 @@ class ZedNode:
             self.image_time = timestamp()
             self.cam.retrieve_image(self._image, sl.VIEW.VIEW_LEFT)
             self.cam.retrieve_measure(self._depth, sl.MEASURE.MEASURE_DEPTH)
-            self.image = self._image.get_data()
+            # save image
+            image = self._image.get_data()
+            # first convert from RGBA to RGB
+            self.image = cv2.cvtColor(image, cv2.COLOR_RGBA2RGB)
+            # save depth map
             self.depth = self._depth.get_data()
             # remove nans from depth map
             self.depth[np.isnan(self.depth)] = self.max_depth
