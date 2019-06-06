@@ -36,11 +36,6 @@ class ZedNode:
         self.image = None
         self.depth = None
 
-        # These variables are used only in the zed node opening the camera
-        # create a save directory, drop ms from datestring
-        self.savedir = '_'.join(timestamp().split('_')[:-1])
-        self.savedir = os.path.join(os.getcwd(), self.savedir)
-
         # set up camera only if we need to work with live feed
         if input_dir is None:
             self.init = sl.InitParameters(**param)
@@ -140,17 +135,18 @@ class ZedNode:
         if self.image is None:
             return
 
-        if not os.path.isdir(self.savedir):
-            os.makedirs(self.savedir)
+        # make sure save folder exists
+        if not os.path.isdir(episode_name):
+            os.makedirs(episode_name)
 
         if self.image_writer is None:
             size = (self.image.shape[1], self.image.shape[0])
-            video_name = os.path.join(self.savedir, 'images.avi')
+            video_name = os.path.join(episode_name, 'images.avi')
             self.image_writer = cv2.VideoWriter(video_name, self.codec, 10, size, True)
 
         if self.depth_writer is None:
             size = (self.depth.shape[1], self.depth.shape[0])
-            depth_name = os.path.join(self.savedir, 'depth.avi')
+            depth_name = os.path.join(episode_name, 'depth.avi')
             self.depth_writer = cv2.VideoWriter(depth_name, self.codec, 10, size, False)
 
         # save the current image
