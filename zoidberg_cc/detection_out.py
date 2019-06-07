@@ -6,7 +6,6 @@ runnum = episode()
 # specifying a recording for testing
 zn = ZedNode('19_145_10_57_14')
 vn = VisionNode()
-frame_num = 0
 
 try:
     print("starting up communication with Zed camera")
@@ -22,12 +21,12 @@ try:
                 pass
             #cv2.imshow("depth", zn.depth)
             cv2.waitKey(100)
+            vn.log(runnum)
 
         if not isnew:
             break
 finally:
     # close file
-    vn.manage_file(True)
     print("Shutting down communication with Zed camera")
     zn.isactive(False)
     cv2.destroyAllWindows()
