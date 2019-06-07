@@ -135,6 +135,9 @@ class ZedNode:
         if self.image is None:
             return
 
+        if self.input_dir is not None:
+            return
+
         # make sure save folder exists
         if not os.path.isdir(episode_name):
             os.makedirs(episode_name)

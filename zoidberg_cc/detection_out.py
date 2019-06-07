@@ -25,6 +25,7 @@ try:
 
         if not isnew:
             break
+
 finally:
     # close file
     print("Shutting down communication with Zed camera")
