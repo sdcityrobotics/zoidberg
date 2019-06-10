@@ -7,6 +7,7 @@ from .pixhawk_node import PixhawkNode
 try:
     from .zed_node import ZedNode
     from .vision_node import VisionNode
-    from .detection import Detection
 except ModuleNotFoundError:
     pass
+
+from .detection import Detection
