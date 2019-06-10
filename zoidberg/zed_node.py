@@ -15,13 +15,6 @@ from zoidberg import timestamp
 import numpy as np
 import cv2
 
-param = dict(camera_resolution=sl.RESOLUTION.RESOLUTION_HD720,
-             depth_mode=sl.DEPTH_MODE.DEPTH_MODE_MEDIUM,
-             coordinate_units=sl.UNIT.UNIT_METER,
-             camera_fps=10,
-             camera_buffer_count_linux=1
-        )
-
 class ZedNode:
     """Main communication connection between the ZedCamera and Zoidberg"""
     def __init__(self, input_dir=None):
@@ -38,7 +31,13 @@ class ZedNode:
 
         # set up camera only if we need to work with live feed
         if input_dir is None:
-            self.init = sl.InitParameters(**param)
+            # initilization information for camera
+            cam_param = dict(camera_resolution=sl.RESOLUTION.RESOLUTION_HD720,
+                             depth_mode=sl.DEPTH_MODE.DEPTH_MODE_MEDIUM,
+                             coordinate_units=sl.UNIT.UNIT_METER,
+                             camera_fps=10,
+                             camera_buffer_count_linux=1)
+            self.init = sl.InitParameters(**cam_param)
             self.cam = sl.Camera()
             self._image = sl.Mat()
             self._depth = sl.Mat()
