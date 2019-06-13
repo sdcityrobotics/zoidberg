@@ -1,3 +1,5 @@
+import cv2
+
 """
 individual detection object
 """
@@ -50,7 +52,7 @@ class Detection:
         self.delta_x = self.center_x - self.frame_center_x
         self.delta_y = self.center_y - self.frame_center_y
         self.delta_z = 0
-
+    
     def to_string(self):
         """String representation of detection"""
         if self.frame_num is None:
@@ -79,3 +81,7 @@ class Detection:
         self.objectID = int(sting_list[1])
         self.bb_ul = (int(sting_list[2]), int(sting_list[3]))
         self.bb_lr = (int(sting_list[4]), int(sting_list[5]))
+
+    def draw_box(self, canvas):
+        """Draw detection bounding box on input canvas"""
+        cv2.rectangle(canvas, self.bb_ul, self.bb_lr, (0, 255, 0), 2)

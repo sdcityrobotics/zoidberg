@@ -21,23 +21,34 @@ class VisionNode:
         self.frame_num = 0
         self.buoy_ID = 1  # integer detection type ID
 
-    def find_buoy(self, img):
-        """find objects by contour"""
+    def create_detection(self, ts, ul, lr):
+        """Create Detection class instance to store info"""
+        detection = Detection()
+        detection.write(self.frame_num,
+                        self.buoy_ID,
+                        ts,
+                        ul,
+                        lr)
+        self.detections.append(detection)
+
+    def find_buoy(self, img):                                 
+        """find objects by contour"""                         
         # set the minimum and maximum distance ratios for valid buoys
-        ratioMax = 0.5
-        ratioMin = 0.2
-
-        # Step the frame number
-        self.frame_num += 1
-
-        img_color = img.copy()
-        scan_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        ratioMax = 0.5                                        
+        ratioMin = 0.2                                        
+                                                              
+        # Step the frame number                               
+        self.frame_num += 1                                   
+                                                              
+        img_color = img.copy()                                
+        scan_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)      
 
         # initial function scan to find all contours
         scan_img = cv2.Sobel(scan_img, cv2.CV_8U, 0, 1, ksize=5)
         scan_img = cv2.threshold(scan_img, 200, 255, cv2.THRESH_BINARY)[1]
         scan_img = cv2.erode(scan_img, None, iterations=1)
         scan_img = cv2.dilate(scan_img, None, iterations=1)
+
 
         # find contours
         contours = cv2.findContours(scan_img,
@@ -50,25 +61,25 @@ class VisionNode:
 
         for contour in contours:
             # if the length of the contour is long enough to be a potential buoy
-            if len(contour) < 45:
-                continue
-            # find coordinates in the frame for buoy validation
-            max_Pt = [9999999, 9999999]  # highest y point, huge values for safety
-            endPt1 = [9999999999, 0]  # the highest y point with lowest x coordinate
-            endPt2 = [-1, 0]  # point with the highest x coordinate
+            if (len(contour) > 45):
+            
+                # find coordinates in the frame for buoy validation
+                max_Pt = [9999999, 9999999]  # highest y point, huge values for safety
+                endPt1 = [9999999999, 0]  # the highest y point with lowest x coordinate
+                endPt2 = [-1, 0]  # point with the highest x coordinate
 
-            for Point in contour:
-                # temporary coordinates for comparison
-                temp_y = Point[0][1]
-                temp_x = Point[0][0]
+                for Point in contour:
+                    # temporary coordinates for comparison
+                    temp_y = Point[0][1]
+                    temp_x = Point[0][0]
 
-                # make decision based on location of temporary x and y coords
-                if (temp_y < max_Pt[1]):
-                    max_Pt = Point[0]
-                if (temp_x < endPt1[0]):
-                    endPt1 = Point[0]
-                if (temp_x > endPt2[0]):
-                    endPt2 = Point[0]
+                    # make decision based on location of temporary x and y coords
+                    if (temp_y < max_Pt[1]):
+                        max_Pt = Point[0]
+                    if (temp_x < endPt1[0]):
+                        endPt1 = Point[0]
+                    if (temp_x > endPt2[0]):
+                        endPt2 = Point[0]
 
                 # store endPt1's coordinates into finalEndPt for comparison
                 finalEndPt = endPt1;
@@ -87,8 +98,9 @@ class VisionNode:
                     ratio = 0
 
                 if ratio >= ratioMin and ratio <= ratioMax:
-                    buoys.append(contour)
-
+                         buoys.append(contour)
+        
+        
         # initialize object array and ID count
         self.detections = []
 
@@ -122,15 +134,11 @@ class VisionNode:
             bb_ul = (x_coord - radius, y_coord - radius)
             bb_lr = (x_coord + radius, y_coord + radius)
 
-            # create class instance and store info
-            # inputting width = height into object for now
-            detection = Detection()
-            detection.write(self.frame_num,
-                            self.buoy_ID,
-                            timestamp(),
-                            bb_ul
-                            bb_lr)
-            self.detections.append(detection)
+            # relay information to detection creator
+            self.create_detection(timestamp(),
+                                  bb_ul,
+                                  bb_lr)
+            
 
     def log(self, episode_name):
         """Save current detections to file"""
@@ -149,3 +157,4 @@ class VisionNode:
         with open(save_name, 'a') as f:
             for detec in self.detections:
                 f.write(detec.to_string())
+                f.write('\n')

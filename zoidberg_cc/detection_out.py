@@ -17,9 +17,12 @@ try:
             cv2.imshow("image", zn.image)
             vn.find_buoy(zn.image)
             for detection in vn.detections:
-                # this should draw the detections on the image
+                # draw detection bounding box
+                detection.draw_box(zn.image)
                 pass
             #cv2.imshow("depth", zn.depth)
+            """displaying drawn image"""
+            cv2.imshow("bb", zn.image)
             cv2.waitKey(100)
             vn.log(runnum)
 
