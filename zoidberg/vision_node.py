@@ -24,11 +24,7 @@ class VisionNode:
     def create_detection(self, ts, ul, lr):
         """Create Detection class instance to store info"""
         detection = Detection()
-        detection.write(self.frame_num,
-                        self.buoy_ID,
-                        ts,
-                        ul,
-                        lr)
+        detection.write(self.frame_num, self.buoy_ID, ts, ul, lr)
         self.detections.append(detection)
 
     def find_buoy(self, img):                                 
@@ -48,7 +44,6 @@ class VisionNode:
         scan_img = cv2.threshold(scan_img, 200, 255, cv2.THRESH_BINARY)[1]
         scan_img = cv2.erode(scan_img, None, iterations=1)
         scan_img = cv2.dilate(scan_img, None, iterations=1)
-
 
         # find contours
         contours = cv2.findContours(scan_img,
@@ -98,8 +93,7 @@ class VisionNode:
                     ratio = 0
 
                 if ratio >= ratioMin and ratio <= ratioMax:
-                         buoys.append(contour)
-        
+                    buoys.append(contour)
         
         # initialize object array and ID count
         self.detections = []
@@ -135,14 +129,11 @@ class VisionNode:
             bb_lr = (x_coord + radius, y_coord + radius)
 
             # relay information to detection creator
-            self.create_detection(timestamp(),
-                                  bb_ul,
-                                  bb_lr)
+            self.create_detection(timestamp(), bb_ul, bb_lr)
             
 
     def log(self, episode_name):
         """Save current detections to file"""
-
         # make sure there is something to save
         if self.detections is None:
             return
