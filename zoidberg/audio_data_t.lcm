@@ -1,0 +1,11 @@
+package zoidberg_lcm;
+
+struct audio_data_t
+{
+    string   timestamp;
+    int32_t  num_channels;
+    int32_t  num_samples;
+    int32_t  fc;
+    float    re_samples[num_channels][num_samples];
+    float    im_samples[num_channels][num_samples];
+}

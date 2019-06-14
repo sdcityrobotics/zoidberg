@@ -1,7 +1,7 @@
 """
-==============
-Acoustics node
-==============
+===============
+Beagle firmware
+===============
 Compute acoustic energy at a single frequency. This is equivalent to computing
 a single bin of an discrete fourier transform. This result, p_atfc, can be
 compaired across multiple channels to get a bearing estimate, a process called
@@ -9,9 +9,12 @@ beamforming.
 """
 import numpy as np
 from math import pi
-import threading
-import queue
 import pyaudio
+import lcm
+
+from exlcm import audio_data_t
+from zoidberg import timestamp
+
 
 fs = 96000  # sampling frequency
 buffer_size = 2 ** 12  # power of 2 buffer size, fixed
@@ -51,10 +54,13 @@ window = np.zeros(winwidth)
 for k in range(len(nuttall3b)):
     window += nuttall3b[k] * np.cos(k * fac)
 
-class AcousticsNode:
+class BeagleFirmware:
     """Compute single frequency result continously, beamform at each ping"""
-    def __init__(self, fc):
-        """fc is frequency of interest"""
+    def __init__(self, fc, sim_gen=None):
+        """fc is frequency of interest
+        sim_gen is a generater object used for simulation. Each time next()
+        is called on it, it is expected to return a buffer like array
+        """
         # center frequency that we are looking for
         self.fc = fc
 
@@ -88,11 +94,11 @@ class AcousticsNode:
             temp = np.zeros(buffer_size, dtype=np.complex64)
             temp[mi: mi + self.winwidth] = self.twidle.copy()
             main_filter.append(temp)
-        self.main_filter = np.array(main_filter)
+        self.main_filter = np.array(main_filter).T
 
         # tail filter is a small matrix that processes data that is overlaped
-        self.tail_size = tail_i[-1] + winwidth
         self.old_tail_size = self.buffer_size - tail_i[0]
+        self.tail_size = self.old_tail_size + winwidth
         self.new_tail_size = self.tail_size - self.old_tail_size
 
         tail_filter = []
@@ -100,11 +106,54 @@ class AcousticsNode:
             temp = np.zeros(self.tail_size, dtype=np.complex64)
             temp[mi: mi + self.winwidth] = self.twidle.copy()
             tail_filter.append(temp)
-        self.tail_filter = np.array(tail_filter)
+        self.tail_filter = np.array(tail_filter).T
 
         # create a buffer to save samples needed in overlap correction
-        self.old_tail = np.zeros((self.old_tail_size, self.num_channels),
+        self.old_tail = np.zeros((self.num_channels, self.old_tail_size),
                                  dtype=np.float32)
+
+        # pyaudio and LCM setup
+        self.sim_gen = sim_gen
+        self.p = None
+        self.stream = None
+        self.lc = lcm.LCM()
+
+    def isactive(self, to_arm):
+        """startup or shutdown data stream from audio card"""
+        if self.sim_gen is None:
+            return
+
+        if to_arm:
+            self.p = pyaudio.PyAudio()
+            self.stream = self.p.open(format=self.in_format,
+                                      channels=self.num_channels,
+                                      rate=self.fc,
+                                      input=True,
+                                      frames_per_buffer=self.buffer_size)
+        else:
+            if self.stream is not None:
+                self.stream.stop_stream()
+                self.stream.close()
+                self.p.terminate
+
+    def spin(self):
+        """Process one frame at a time, put into an infinite loop"""
+        if self.sim_gen is None:
+            # read data from stream object and process it
+            data = self.stream.read(self.buffer_size)
+            recorded_data = self._buf_to_np(data)
+        else:
+            recorded_data = next(self.sim_gen)
+
+        processed_data = self.process(recorded_data)
+        # send result out over lcm
+        msg = audio_data_t()
+        msg.timestamp = timestamp()
+        msg.num_channels, msg.num_samples = processed_data.shape
+        msg.fc = self.fc
+        msg.re_samples = processed_data.real
+        msg.im_samples = processed_data.imag
+        self.lc.publish("ACOUSITCS", msg.encode())
 
     def process(self, recorded_data):
         """
@@ -112,31 +161,14 @@ class AcousticsNode:
         """
         # compute results from tail of previous buffer
         all_tail = np.concatenate([self.old_tail,
-                                   recorded_data[:self.new_tail_size, :]])
+                                   recorded_data[:, :self.new_tail_size]],
+                                   axis=1)
         # compute acoustic values as a vector multiply
-        tail_atfc = self.tail_filter @ all_tail
-        main_atfc = self.main_filter @ recorded_data
+        tail_atfc = all_tail @ self.tail_filter
+        main_atfc = recorded_data @ self.main_filter
         # record tail values for next time around
-        self.old_tail = recorded_data[self.tail_index[0]: ,:].copy()
-        return np.concatenate([tail_atfc, main_atfc])
-
-    def log(self, episode_name):
-        """save current reading to a log file"""
-        if not os.path.isdir(episode_name):
-            os.makedirs(episode_name)
-        save_name = os.path.join(episode_name, 'acoustics.dat')
-
-        with open(save_name, 'ab+') as f:
-            f.write(self.curr_read.tobytes())
-
-    def load(self, episode_name):
-        """load from log file to current reading"""
-        with open(savefile, 'rb') as f:
-            bytesin = f.read()
-
-        tout = np.frombuffer(bytesin, dtype=self.datatype)
-        tout = tout.reshape((-1, num_channels))
-        self.all_read = tout
+        self.old_tail = recorded_data[:, -self.old_tail_size:].copy()
+        return np.concatenate([tail_atfc, main_atfc], axis=1)
 
     def _buf_to_np(self, buf):
         """Convert a buffer of bytes to numpy array
