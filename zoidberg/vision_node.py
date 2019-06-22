@@ -131,6 +131,36 @@ class VisionNode:
             # relay information to detection creator
             self.create_detection(timestamp(), bb_ul, bb_lr)
             
+    def find_rect(self, image):
+        """single rectangular buoy detection""" 
+        markers = 0
+        threshold = 10
+        
+        # find buoy by changing blue channel threshold
+        while (np.amax(markers) == 0):
+            threshold += 5
+            t, img = cv2.threshold(image[:,:,0], threshold, 255, cv2.THRESH_BINARY_INV)
+            cv2.imshow('img', img)
+            _, markers = cv2.connectedComponents(img)
+
+        # define kernal and remove noise
+        kernal = np.ones((5,5), np.uint8)
+        img = cv2.morphologyEx(img, cv2.MORPH_OPEN, kernal)
+        img = cv2.morphologyEx(img, cv2.MORPH_DILATE, kernal)
+        
+        # get pixels of buoy and relay information
+        nonzero = cv2.findNonZero(img)
+        x, y, w, h = cv2.boundingRect(nonzero)
+        cv2.rectangle(image, (x, y), (x + w, y + h), (0, 255, 0), 2)
+        x_c = int(x)
+        y_c = int(y)
+        h_c = int(h)
+        w_c = int(w)
+        bb_ul = (x_c - w_c, y_c - h_c)
+        bb_lr = (x_c + w_c, y_c + h_c)
+        self.detections = []
+        self.frame_num += 1
+        self.create_detection(timestamp(), bb_ul, bb_lr)  
 
     def log(self, episode_name):
         """Save current detections to file"""

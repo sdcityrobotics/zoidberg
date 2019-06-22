@@ -15,7 +15,7 @@ try:
         if isnew:
             # obtain image and log detections
             cv2.imshow("image", zn.image)
-            vn.find_buoy(zn.image)
+            vn.find_rect(zn.image)
             for detection in vn.detections:
                 # draw detection bounding box
                 detection.draw_box(zn.image)
@@ -25,7 +25,6 @@ try:
             cv2.imshow("bb", zn.image)
             cv2.waitKey(100)
             vn.log(runnum)
-
         if not isnew:
             break
 
