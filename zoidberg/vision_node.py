@@ -24,7 +24,11 @@ class VisionNode:
     def create_detection(self, ts, ul, lr):
         """Create Detection class instance to store info"""
         detection = Detection()
-        detection.write(self.frame_num, self.buoy_ID, ts, ul, lr)
+        detection.write(self.frame_num,
+                        self.buoy_ID,
+                        ts,
+                        ul,
+                        lr)
         self.detections.append(detection)
 
     def find_buoy(self, img):                                 
@@ -44,6 +48,7 @@ class VisionNode:
         scan_img = cv2.threshold(scan_img, 200, 255, cv2.THRESH_BINARY)[1]
         scan_img = cv2.erode(scan_img, None, iterations=1)
         scan_img = cv2.dilate(scan_img, None, iterations=1)
+
 
         # find contours
         contours = cv2.findContours(scan_img,
@@ -93,7 +98,8 @@ class VisionNode:
                     ratio = 0
 
                 if ratio >= ratioMin and ratio <= ratioMax:
-                    buoys.append(contour)
+                         buoys.append(contour)
+        
         
         # initialize object array and ID count
         self.detections = []
@@ -129,9 +135,11 @@ class VisionNode:
             bb_lr = (x_coord + radius, y_coord + radius)
 
             # relay information to detection creator
-            self.create_detection(timestamp(), bb_ul, bb_lr)
+            self.create_detection(timestamp(),
+                                  bb_ul,
+                                  bb_lr)
             
-    def find_rect(self, image):
+    def find_rect(self, image, depth):
         """single rectangular buoy detection""" 
         markers = 0
         threshold = 10
@@ -139,7 +147,7 @@ class VisionNode:
         # find buoy by changing blue channel threshold
         while (np.amax(markers) == 0):
             threshold += 5
-            t, img = cv2.threshold(image[:,:,0], threshold, 255, cv2.THRESH_BINARY_INV)
+            temp_t, img = cv2.threshold(image[:,:,0], threshold, 255, cv2.THRESH_BINARY_INV)
             cv2.imshow('img', img)
             _, markers = cv2.connectedComponents(img)
 
@@ -150,20 +158,34 @@ class VisionNode:
         
         # get pixels of buoy and relay information
         nonzero = cv2.findNonZero(img)
+        x = 0
+        y = 0
+        w = 0
+        h = 0
         x, y, w, h = cv2.boundingRect(nonzero)
-        cv2.rectangle(image, (x, y), (x + w, y + h), (0, 255, 0), 2)
-        x_c = int(x)
-        y_c = int(y)
-        h_c = int(h)
-        w_c = int(w)
-        bb_ul = (x_c - w_c, y_c - h_c)
-        bb_lr = (x_c + w_c, y_c + h_c)
-        self.detections = []
-        self.frame_num += 1
-        self.create_detection(timestamp(), bb_ul, bb_lr)  
+        
+        # determine if detected object is ideal
+        if ((x != 0 and y != 0) or (h > 20 and w > 20)):
+            # ideal detected object was found
+            cv2.rectangle(image, (x, y), (x + w, y + h), (0, 255, 0), 2)
+            x_c = int(x)
+            y_c = int(y)
+            h_c = int(h)
+            w_c = int(w)
+            bb_ul = (x_c - w_c, y_c - h_c)
+            bb_lr = (x_c + w_c, y_c + h_c)
+            self.detections = []
+            self.frame_num += 1
+            self.create_detection(timestamp(), bb_ul, bb_lr)  
+        else:
+           # possible null Detection object result/decision
+           pass
+
+        """analysis on depth image here"""
 
     def log(self, episode_name):
         """Save current detections to file"""
+
         # make sure there is something to save
         if self.detections is None:
             return

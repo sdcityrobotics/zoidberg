@@ -15,7 +15,7 @@ try:
         if isnew:
             # obtain image and log detections
             cv2.imshow("image", zn.image)
-            vn.find_rect(zn.image)
+            vn.find_rect(zn.image, zn.depth)
             for detection in vn.detections:
                 # draw detection bounding box
                 detection.draw_box(zn.image)
