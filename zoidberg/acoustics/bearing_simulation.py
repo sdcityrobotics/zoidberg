@@ -17,12 +17,10 @@ fc = 30000
 T = 0.004  # pulse width, ms
 c = 1480.  #speed of sound
 
-# signal threshold value. Once this is exceeded we begin beamforming
-p2_thresh = .025
-
 # Array geometry
 num_channels = 3
-array_position = np.array([0, c / (2 * fc), c / fc])
+#array_position = np.array([0, c / (2 * fc), c / fc])
+array_position = np.array([0, 0.0185, 0.037])
 
 # add some noise to the signal. We can't anticipate what the tank will sound
 # like in the background, so this is a coarse approximation of background

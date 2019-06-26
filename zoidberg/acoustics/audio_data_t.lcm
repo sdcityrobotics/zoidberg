@@ -6,6 +6,8 @@ struct audio_data_t
     int32_t  num_channels;
     int32_t  num_samples;
     int32_t  fc;
+    int32_t  fs;
+    int32_t  num_step;
     float    re_samples[num_channels][num_samples];
     float    im_samples[num_channels][num_samples];
 }
