@@ -51,7 +51,7 @@ class AcousticsNode:
         num_look = 300  # oversample in possible look directions
         # look directions are from -pi / 2 to pi / 2
         self.look_directions = np.arange(num_look) * pi / num_look - pi / 2
-        k_x = (2 * pi * self.fc / self.c) * np.cos(self.look_directions)
+        k_x = (2 * pi * self.fc / self.c) * np.sin(self.look_directions)
         self.look_vectors = np.exp(1j * np.arange(num_channels)[:, None]
                                    * self.dx * k_x)
 
