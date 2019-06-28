@@ -11,29 +11,24 @@ an = AcousticsNode(fc)
 
 bout = []
 tout = []
-ampsout = []
-timestamp = None
+arrival_time = None
 try:
     an.is_active(True)
     while True:
-        if (timestamp is None and an.timestamp is not None)\
-                or an.timestamp != timestamp:
-            timestamp = an.timestamp
+        if (arrival_time is None and an.arrival_time > 0)\
+                or an.arrival_time != arrival_time:
+            arrival_time = an.arrival_time
             bout.append(an.bearing)
             tout.append(an.arrival_time)
-
-            if an.recorded_data is not None:
-                ampsout.append(np.abs(an.recorded_data[0, :]))
-        sleep(0.01)
+        sleep(0.001)
 finally:
     an.is_active(False)
     # recorded data
     bout = np.array(bout)
     tout = np.array(tout)
-    ampsout = np.concatenate(ampsout)
     # remove invalid results
     bout = bout[bout > -1000]
     tout = tout[tout > -1000]
 
-
-
+fig, ax = plt.subplots()
+ax.plot(tout, bout, '.')

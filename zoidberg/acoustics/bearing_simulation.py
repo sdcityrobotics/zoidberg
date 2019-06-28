@@ -41,7 +41,7 @@ def one_ping(rcr_range, rcr_depth, rcr_bearing):
     # each receiver will have a slighly different coordinates based on bearing and
     # distance
     dx = rcr_range + array_position * sin(radians(rcr_bearing))
-    dy = rcr_range + array_position * cos(radians(rcr_bearing))
+    dy = array_position * cos(radians(rcr_bearing))
     rr = np.sqrt(dx ** 2 + dy ** 2)
 
     # simulate first 3 in-plane arrivals
@@ -91,6 +91,7 @@ def get_buffer():
 # start up firware node
 nbd = BeagleFirmware(fc, sim_gen=get_buffer())
 
-while True:
-    nbd.spin()
-    sleep(0.01)
+if __name__ == "__main__":
+    while True:
+        nbd.spin()
+        sleep(0.01)

@@ -143,6 +143,7 @@ class BeagleFirmware:
             data = self.stream.read(self.buffer_size)
             recorded_data = self._buf_to_np(data)
         else:
+            # pull next record for generator
             recorded_data = next(self.sim_gen)
 
         processed_data = self.process(recorded_data)
