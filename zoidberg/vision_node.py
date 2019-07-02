@@ -31,17 +31,17 @@ class VisionNode:
                         lr)
         self.detections.append(detection)
 
-    def find_buoy(self, img):                                 
-        """find objects by contour"""                         
+    def find_buoy(self, img):
+        """Find objects by contour"""
         # set the minimum and maximum distance ratios for valid buoys
-        ratioMax = 0.5                                        
-        ratioMin = 0.2                                        
-                                                              
-        # Step the frame number                               
-        self.frame_num += 1                                   
-                                                              
-        img_color = img.copy()                                
-        scan_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)      
+        ratioMax = 0.5
+        ratioMin = 0.2
+
+        # Step the frame number
+        self.frame_num += 1
+
+        img_color = img.copy()
+        scan_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
         # initial function scan to find all contours
         scan_img = cv2.Sobel(scan_img, cv2.CV_8U, 0, 1, ksize=5)
@@ -62,7 +62,7 @@ class VisionNode:
         for contour in contours:
             # if the length of the contour is long enough to be a potential buoy
             if (len(contour) > 45):
-            
+
                 # find coordinates in the frame for buoy validation
                 max_Pt = [9999999, 9999999]  # highest y point, huge values for safety
                 endPt1 = [9999999999, 0]  # the highest y point with lowest x coordinate
@@ -99,8 +99,8 @@ class VisionNode:
 
                 if ratio >= ratioMin and ratio <= ratioMax:
                          buoys.append(contour)
-        
-        
+
+
         # initialize object array and ID count
         self.detections = []
 
@@ -138,12 +138,12 @@ class VisionNode:
             self.create_detection(timestamp(),
                                   bb_ul,
                                   bb_lr)
-            
+
     def find_rect(self, image, depth):
-        """single rectangular buoy detection""" 
+        """Single rectangular buoy detection"""
         markers = 0
         threshold = 10
-        
+
         # find buoy by changing blue channel threshold
         while (np.amax(markers) == 0):
             threshold += 5
@@ -155,7 +155,8 @@ class VisionNode:
         kernal = np.ones((5,5), np.uint8)
         img = cv2.morphologyEx(img, cv2.MORPH_OPEN, kernal)
         img = cv2.morphologyEx(img, cv2.MORPH_DILATE, kernal)
-        
+
+        """Image analysis"""
         # get pixels of buoy and relay information
         nonzero = cv2.findNonZero(img)
         x = 0
@@ -163,7 +164,7 @@ class VisionNode:
         w = 0
         h = 0
         x, y, w, h = cv2.boundingRect(nonzero)
-        
+
         # determine if detected object is ideal
         if ((x != 0 and y != 0) or (h > 20 and w > 20)):
             # ideal detected object was found
@@ -176,12 +177,201 @@ class VisionNode:
             bb_lr = (x_c + w_c, y_c + h_c)
             self.detections = []
             self.frame_num += 1
-            self.create_detection(timestamp(), bb_ul, bb_lr)  
+            self.create_detection(timestamp(), bb_ul, bb_lr)
         else:
-           # possible null Detection object result/decision
+           self.detections = None
            pass
 
-        """analysis on depth image here"""
+    def find_gate(self, image):
+        
+        """Gate leg class"""
+        class GateLeg:
+            def __init__(self):
+                self.x = None
+                self.y = None
+                self.w = None
+                self.h = None
+
+            def log(self, x_c, y_c, w_c, h_c):
+                self.x = x_c
+                self.y = y_c
+                self.w = w_c
+                self.h = h_c
+
+            # temporary analysis print
+            def print_leg(self):
+                print(str(self.x) + ', ' + str(self.y))
+
+        """Gate class"""
+        class Gate:
+            def __init__(self):
+                self.center_x = None
+                self.center_y = None
+
+            def log(self, c_x, c_y):
+                self.center_x = c_x
+                self.center_y = c_y
+
+            def draw_center(self, img):
+                cv2.circle(img, (self.center_x, self.center_y), 10, (0, 0, 255), -1)
+        
+        """Image operations"""
+        # smooth image with alternative closing/opening by adjusting kernel
+        morph = image.copy()
+        original = image.copy()
+        kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (1, 1))
+        morph = cv2.morphologyEx(morph, cv2.MORPH_CLOSE, kernel)
+        morph = cv2.morphologyEx(morph, cv2.MORPH_OPEN, kernel)
+
+        # take morphological gradient
+        kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (2, 2))
+        gradient_image = cv2.morphologyEx(morph, cv2.MORPH_GRADIENT, kernel)
+
+        # split the gradient image into channels
+        image_channels = np.split(np.asarray(gradient_image), 3, axis=2)
+        channel_height, channel_width, _ = image_channels[0].shape
+
+        # apply Otsu threshold to each channel
+        for i in range(0, 3):
+            _, image_channels[i] = cv2.threshold(~image_channels[i], 0, 255, cv2.THRESH_OTSU | cv2.THRESH_BINARY)
+            image_channels[i] = np.reshape(image_channels[i], newshape=(channel_height, channel_width, 1))
+
+        # merge channels
+        image_channels = np.concatenate((image_channels[0], image_channels[1], image_channels[2]), axis=2)
+
+        # create result of low/high thresholds
+        low = np.array([120, 120, 0])
+        high = np.array([255, 255, 0])
+        mask = cv2.inRange(image_channels, low, high)
+        result = cv2.bitwise_and(image_channels, image_channels, mask=mask)
+
+        # isolate potential rectangles
+        gray = cv2.cvtColor(result, cv2.COLOR_BGR2GRAY)
+        ret, thresh = cv2.threshold(gray, 127, 255, cv2.THRESH_BINARY)
+
+        # find vertical leg lines
+        verticalStructure = cv2.getStructuringElement(cv2.MORPH_RECT, (1, 10))
+        vertical = cv2.erode(thresh, verticalStructure)
+        vertical = cv2.dilate(vertical, verticalStructure)
+
+        # form solid leg lines and get contours
+        kernel = np.ones((45,45),np.uint8)
+        close = cv2.morphologyEx(vertical, cv2.MORPH_CLOSE, kernel)
+        im2, contours, hierarchy = cv2.findContours(close, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+        # initialize
+        main = True
+        adjust = True
+        min_area = 20*20
+        param = 0.60
+        gate_legs = []
+
+        """Main image analysis"""
+        while main:
+            if (adjust == False):
+                param -= 0.10
+                if (param < 0):
+                    print('null')
+                    main = False
+
+                adjust = True
+
+            # draw the contours with area bigger than a minimum and being rectangular
+            for contour in contours:
+                x = 0
+                y = 0
+                w = 0
+                h = 0
+                x, y, w, h = cv2.boundingRect(contour)
+                area = cv2.contourArea(contour)
+
+                # validate found area
+                if (area > (w * h * param) and area > min_area):
+                    # store potenial gate leg
+                    leg = GateLeg()
+                    leg.log(x, y, w, h)
+                    gate_legs.append(leg)
+
+            final_gate_legs = []
+            count = 0
+            fg_count = 0
+            # verify if there were more than two 'legs' found
+            if (len(gate_legs) > 2):
+                """find the outlier/reflection"""
+                x_temp = gate_legs[0].x
+                y_temp = gate_legs[0].y
+                count = 1
+                flag = True
+
+                while flag:
+                    # compare next potential leg to original
+                    if ((abs(x_temp - gate_legs[count].x) > 100) and (abs(y_temp - \
+                            gate_legs[count].y) < 50)):
+                        # a good match was found
+                        final_gate_legs.append(gate_legs[count])
+                        count += 1
+                        if (count > len(gate_legs)):
+                            # end of list was reached
+                            flag = False
+                        else:
+                            # add original to the final list, eliminating the outlier
+                            final_gate_legs.append(gate_legs[0])
+                            if ((count + 1) == len(gate_legs)):
+                                flag = False
+                            else:
+                                # keep finding reflections/outliers
+                                x_temp = final_gate_legs[fg_count].x
+                                y_temp = final_gate_legs[fg_count].y
+                                fg_count += 1
+                                count += 1
+                    else:
+                        # more than two were found, but too small
+                        flag = False
+
+                # if both legs were found
+                if (len(final_gate_legs) == 2):
+                    x1 = final_gate_legs[0].x + final_gate_legs[0].w
+                    y1 = final_gate_legs[0].y + final_gate_legs[0].h
+                    x2 = final_gate_legs[1].x
+                    y2 = final_gate_legs[1].y
+                    cv2.rectangle(original, (x1, y1), (x2, y2), (0, 255, 0), 3)
+                    g_c_x = int((x1 + x2) / 2)
+                    g_c_y = int((y1 + y2) / 2)
+                    gate = Gate()
+                    gate.log(g_c_x, g_c_y)
+                    gate.draw_center(original)
+                    main = False
+
+                else:
+                    # adjust param at the beginning and start over
+                    adjust = False
+
+            # if two legs were found
+            if (len(gate_legs) == 2):
+                # access legs, find proper coordinates for bbox/center and draw
+                x1 = gate_legs[0].x
+                y1 = gate_legs[0].y
+                x2 = gate_legs[1].x + gate_legs[1].w
+                y2 = gate_legs[1].y + gate_legs[1].h
+                cv2.rectangle(original, (x1, y1), (x2, y2), (0, 255, 0), 3)
+                g_c_x = int((x1 + x2) / 2)
+                g_c_y = int((y1 + y2) / 2)
+                gate = Gate()
+                gate.log(g_c_x, g_c_y)
+                gate.draw_center(original)
+                main = False
+
+            else:
+                # adjust parameter and start over
+                adjust = False
+
+        cv2.imshow('original', original)
+        """analysis images
+        cv2.imshow("original", original)
+        cv2.imshow("line results", im)
+        cv2.imshow('result', result)
+        cv2.imshow('image', image_channels)
+        """
 
     def log(self, episode_name):
         """Save current detections to file"""
