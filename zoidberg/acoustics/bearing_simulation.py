@@ -17,12 +17,10 @@ fc = 30000
 T = 0.004  # pulse width, ms
 c = 1480.  #speed of sound
 
-# signal threshold value. Once this is exceeded we begin beamforming
-p2_thresh = .025
-
 # Array geometry
 num_channels = 3
-array_position = np.array([0, c / (2 * fc), c / fc])
+#array_position = np.array([0, c / (2 * fc), c / fc])
+array_position = np.array([0, 0.0185, 0.037])
 
 # add some noise to the signal. We can't anticipate what the tank will sound
 # like in the background, so this is a coarse approximation of background
@@ -43,7 +41,7 @@ def one_ping(rcr_range, rcr_depth, rcr_bearing):
     # each receiver will have a slighly different coordinates based on bearing and
     # distance
     dx = rcr_range + array_position * sin(radians(rcr_bearing))
-    dy = rcr_range + array_position * cos(radians(rcr_bearing))
+    dy = array_position * cos(radians(rcr_bearing))
     rr = np.sqrt(dx ** 2 + dy ** 2)
 
     # simulate first 3 in-plane arrivals
@@ -93,6 +91,7 @@ def get_buffer():
 # start up firware node
 nbd = BeagleFirmware(fc, sim_gen=get_buffer())
 
-while True:
-    nbd.spin()
-    sleep(0.01)
+if __name__ == "__main__":
+    while True:
+        nbd.spin()
+        sleep(0.01)

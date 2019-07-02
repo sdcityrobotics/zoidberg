@@ -12,7 +12,7 @@ from math import pi
 import pyaudio
 import lcm
 
-from exlcm import audio_data_t
+from zoidberg_lcm import audio_data_t
 from zoidberg import timestamp
 
 
@@ -143,6 +143,7 @@ class BeagleFirmware:
             data = self.stream.read(self.buffer_size)
             recorded_data = self._buf_to_np(data)
         else:
+            # pull next record for generator
             recorded_data = next(self.sim_gen)
 
         processed_data = self.process(recorded_data)
@@ -151,9 +152,11 @@ class BeagleFirmware:
         msg.timestamp = timestamp()
         msg.num_channels, msg.num_samples = processed_data.shape
         msg.fc = self.fc
+        msg.num_step = self.num_step
+        msg.fs = self.fs
         msg.re_samples = processed_data.real
         msg.im_samples = processed_data.imag
-        self.lc.publish("ACOUSITCS", msg.encode())
+        self.lc.publish("ACOUSTICS", msg.encode())
 
     def process(self, recorded_data):
         """
