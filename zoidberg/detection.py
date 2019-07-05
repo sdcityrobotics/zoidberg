@@ -23,9 +23,8 @@ class Detection:
         self.center_x = None
         self.center_y = None
 
-
-    def write(self, frame_num, objectID, time_stamp, bb_ul, bb_lr):
-        """Populate detection information"""
+    def write_buoy(self, frame_num, objectID, time_stamp, bb_ul, bb_lr):
+        """Populate buoy detection information"""
         self.frame_num = frame_num
         self.objectID = objectID
         self.time_stamp = time_stamp
@@ -52,7 +51,28 @@ class Detection:
         self.delta_x = self.center_x - self.frame_center_x
         self.delta_y = self.center_y - self.frame_center_y
         self.delta_z = 0
-    
+
+    def write_gate(self, frame_num, objectID, time_stamp, g_ul_x, g_ul_y, g_br_x, g_br_y, g_w, g_h):
+        """Populate gate detection information"""
+        self.frame_num = frame_num
+        self.objectID = objectID
+        self.time_stamp = time_stamp 
+        
+        # given gate coordinates
+        self.gate_ul_x = g_ul_x
+        self.gate_ul_y = g_ul_y
+        self.gate_br_x = g_br_x
+        self.gate_br_y = g_br_y
+        self.gate_w = g_w
+        self.gate_h = g_h
+        
+        # convert input for text writing
+        self.bb_ul = (self.gate_ul_x, self.gate_ul_y)
+        self.bb_lr = (self.gate_br_x, self.gate_br_y)
+        self.center_x = self.bb_ul[0] + self.gate_w // 2
+        self.center_y = self.bb_ul[1] + self.gate_h // 2
+
+
     def to_string(self):
         """String representation of detection"""
         if self.frame_num is None:
@@ -74,7 +94,7 @@ class Detection:
         """Load a detection from string representation"""
         sting_list = detection_string.split(', ')
         if len(sting_list) != 6:
-            print('dection string is incorect length')
+            print('dection string is incorrect length')
             return
         # populate detection information from string
         self.frame_num = int(sting_list[0])

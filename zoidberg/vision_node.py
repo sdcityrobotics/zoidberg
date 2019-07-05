@@ -19,17 +19,102 @@ class VisionNode:
         """Basic initialization"""
         self.detections = None
         self.frame_num = 0
-        self.buoy_ID = 1  # integer detection type ID
+        self.buoy_ID = 1  # integer buoy detection ID
+        self.r_gate_ID = 2  # integer right gate detection ID
+        self.l_gate_ID = 3  # integer left gate detection ID
+        self.g_gate_ID = 4  # integer full gate detection ID
 
-    def create_detection(self, ts, ul, lr):
+    def buoy_detection(self, ts, ul, lr):
         """Create Detection class instance to store info"""
         detection = Detection()
-        detection.write(self.frame_num,
+        detection.write_buoy(self.frame_num,
                         self.buoy_ID,
                         ts,
                         ul,
                         lr)
         self.detections.append(detection)
+
+    def gate_detection(self, gate_legs):
+        """Gate detection object creation"""
+        r_g_ul_x = None
+        r_g_ul_y = None
+        r_g_br_x = None
+        r_g_br_y = None
+        r_g_w = None
+        r_g_h = None
+        l_g_ul_x = None
+        l_g_ul_y = None
+        l_g_br_x = None
+        l_g_br_y = None
+        l_g_w = None
+        l_g_h = None
+        gate_ul_x = None
+        gate_ul_y = None
+        gate_br_x = None
+        gate_br_y = None
+        gate_w = None
+        gate_h = None
+
+        r = Detection()
+        l = Detection()
+        g = Detection()
+
+        if (gate_legs[0].x > gate_legs[1].x):
+            # (x, y, w, h)1 = right gate --> [0]
+            r_g_ul_x = gate_legs[0].x
+            r_g_ul_y = gate_legs[0].y
+            r_g_w = gate_legs[0].w
+            r_g_h = gate_legs[0].h
+            r_g_br_x = r_g_ul_x + r_g_w
+            r_g_br_y = r_g_ul_y + r_g_h
+            l_g_ul_x = gate_legs[1].x
+            l_g_ul_y = gate_legs[1].y
+            l_g_w = gate_legs[1].w
+            l_g_h = gate_legs[1].h
+            l_g_br_x = l_g_ul_x + l_g_w
+            l_g_br_y = l_g_ul_y + l_g_h
+
+        else:
+            # (x, y, w, h)1 = right gate --> [1]
+            l_g_ul_x = gate_legs[0].x
+            l_g_ul_y = gate_legs[0].y
+            l_g_w = gate_legs[0].w
+            l_g_h = gate_legs[0].h
+            l_g_br_x = l_g_ul_x + l_g_w
+            l_g_br_y = l_g_ul_y + l_g_h
+            r_g_ul_x = gate_legs[1].x
+            r_g_ul_y = gate_legs[1].y
+            r_g_w = gate_legs[1].w
+            r_g_h = gate_legs[1].h
+            r_g_br_x = r_g_ul_x + r_g_w
+            r_g_br_y = r_g_ul_y + r_g_h
+
+        gate_ul_x = l_g_ul_x
+        gate_ul_y = l_g_ul_y
+        gate_br_x = r_g_br_x
+        gate_br_y = r_g_br_y
+        gate_w = int(abs(gate_ul_x - gate_br_x))
+        gate_h = int(abs(gate_ul_y - gate_br_y))
+
+        """ 
+        cv2.rectangle(origin, (gate_ul_x, gate_ul_y), (gate_br_x, gate_br_y), \
+                     (255, 255, 255), 10)
+        cv2.imshow('origin', origin)
+        """
+
+        r.write_gate(self.frame_num, self.r_gate_ID, timestamp(), r_g_ul_x, r_g_ul_y, r_g_br_x, r_g_br_y, \
+                     r_g_w, r_g_h)
+
+        l.write_gate(self.frame_num, self.l_gate_ID, timestamp(), l_g_ul_x, l_g_ul_y, l_g_br_x, l_g_br_y, \
+                     l_g_w, l_g_h)
+
+        g.write_gate(self.frame_num, self.g_gate_ID, timestamp(), gate_ul_x, gate_ul_y, gate_br_x, gate_br_y, \
+                     gate_w, gate_h)
+        
+        self.frame_num += 1
+        self.detections.append(r)
+        self.detections.append(l)
+        self.detections.append(g)
 
     def find_buoy(self, img):
         """Find objects by contour"""
@@ -135,7 +220,7 @@ class VisionNode:
             bb_lr = (x_coord + radius, y_coord + radius)
 
             # relay information to detection creator
-            self.create_detection(timestamp(),
+            self.buoy_detection(timestamp(),
                                   bb_ul,
                                   bb_lr)
 
@@ -156,7 +241,6 @@ class VisionNode:
         img = cv2.morphologyEx(img, cv2.MORPH_OPEN, kernal)
         img = cv2.morphologyEx(img, cv2.MORPH_DILATE, kernal)
 
-        """Image analysis"""
         # get pixels of buoy and relay information
         nonzero = cv2.findNonZero(img)
         x = 0
@@ -177,13 +261,13 @@ class VisionNode:
             bb_lr = (x_c + w_c, y_c + h_c)
             self.detections = []
             self.frame_num += 1
-            self.create_detection(timestamp(), bb_ul, bb_lr)
+            self.buoy_detection(timestamp(), bb_ul, bb_lr)
+
         else:
            self.detections = None
            pass
 
-    def find_gate(self, image):
-        
+    def find_gate(self, image, depth):
         """Gate leg class"""
         class GateLeg:
             def __init__(self):
@@ -202,23 +286,10 @@ class VisionNode:
             def print_leg(self):
                 print(str(self.x) + ', ' + str(self.y))
 
-        """Gate class"""
-        class Gate:
-            def __init__(self):
-                self.center_x = None
-                self.center_y = None
-
-            def log(self, c_x, c_y):
-                self.center_x = c_x
-                self.center_y = c_y
-
-            def draw_center(self, img):
-                cv2.circle(img, (self.center_x, self.center_y), 10, (0, 0, 255), -1)
-        
-        """Image operations"""
         # smooth image with alternative closing/opening by adjusting kernel
         morph = image.copy()
         original = image.copy()
+        origin = image.copy()
         kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (1, 1))
         morph = cv2.morphologyEx(morph, cv2.MORPH_CLOSE, kernel)
         morph = cv2.morphologyEx(morph, cv2.MORPH_OPEN, kernel)
@@ -265,18 +336,20 @@ class VisionNode:
         min_area = 20*20
         param = 0.60
         gate_legs = []
+        self.detections = []
 
-        """Main image analysis"""
         while main:
+            # if parameter adjustment is needed
             if (adjust == False):
                 param -= 0.10
                 if (param < 0):
+                    # nothing was found
                     print('null')
                     main = False
 
                 adjust = True
 
-            # draw the contours with area bigger than a minimum and being rectangular
+            # draw contours with area bigger than a minimum and being rectangular
             for contour in contours:
                 x = 0
                 y = 0
@@ -330,42 +403,22 @@ class VisionNode:
 
                 # if both legs were found
                 if (len(final_gate_legs) == 2):
-                    x1 = final_gate_legs[0].x + final_gate_legs[0].w
-                    y1 = final_gate_legs[0].y + final_gate_legs[0].h
-                    x2 = final_gate_legs[1].x
-                    y2 = final_gate_legs[1].y
-                    cv2.rectangle(original, (x1, y1), (x2, y2), (0, 255, 0), 3)
-                    g_c_x = int((x1 + x2) / 2)
-                    g_c_y = int((y1 + y2) / 2)
-                    gate = Gate()
-                    gate.log(g_c_x, g_c_y)
-                    gate.draw_center(original)
+                    self.gate_detection(final_gate_legs)
                     main = False
 
                 else:
                     # adjust param at the beginning and start over
                     adjust = False
 
-            # if two legs were found
+            # if two legs were originally found
             if (len(gate_legs) == 2):
-                # access legs, find proper coordinates for bbox/center and draw
-                x1 = gate_legs[0].x
-                y1 = gate_legs[0].y
-                x2 = gate_legs[1].x + gate_legs[1].w
-                y2 = gate_legs[1].y + gate_legs[1].h
-                cv2.rectangle(original, (x1, y1), (x2, y2), (0, 255, 0), 3)
-                g_c_x = int((x1 + x2) / 2)
-                g_c_y = int((y1 + y2) / 2)
-                gate = Gate()
-                gate.log(g_c_x, g_c_y)
-                gate.draw_center(original)
+                self.gate_detection(gate_legs)
                 main = False
 
             else:
                 # adjust parameter and start over
                 adjust = False
 
-        cv2.imshow('original', original)
         """analysis images
         cv2.imshow("original", original)
         cv2.imshow("line results", im)
