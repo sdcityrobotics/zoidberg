@@ -16,13 +16,10 @@ def main_loop(node_dict, episode_name, timeout, isdone=None,
               detection_task=None):
     """Mainloop is common to all mission tasks
 
-    modedict is a dictionary of all instrument nodes. one must be the pixhawk.
+    nodedict is a dictionary of all instrument nodes. one must be the pixhawk.
     mainloop will run untill timeout
 
     isdone: function that will terminate the loop if True
-    also used to actuate torpedoes and drop markers. These are performed as
-    side effects, i.e. invisible to the user. Be very careful hiding behaviors
-    in this way, but for torpedoes we make an exception.
 
     get functions: called to return motor outputs. The only approved way to
     move the robot around
@@ -74,7 +71,7 @@ def main_loop(node_dict, episode_name, timeout, isdone=None,
                                 vel_turn=vr)
 
         # mission completion check
-        if isdone(node_dict):
+        if isdone is not None and isdone(node_dict):
             return True
 
         # timeout condition
@@ -83,6 +80,13 @@ def main_loop(node_dict, episode_name, timeout, isdone=None,
 
         pause(currenttime, actionperiod)
 
+def constant_motor_task(speed_value):
+    """Use to fire the motors at a constant speed
+    speed_value is between -100 and 100, with 0 is no motion
+    """
+    # need to return a function that returns the speed value each time it is
+    # called. A lambda function is used for this simple task
+    return lambda node_dict: speed_value
 
 def constant_r_task(r_target, P, r_max):
     """return an anonymous function to turn to desired heading"""
@@ -104,13 +108,44 @@ def constant_r_task(r_target, P, r_max):
     # return the function we just created
     return task
 
+def constant_depth_task(depth_target, P, z_max):
+    """return an anonymous function to turn to desired depth"""
+    def task(node_dict):
+        """return a delta depth value to best dive to desired depth"""
+        # always check that the sensor has been initialized
+        if node_dict['pn'].depth == empty_value:
+            # if sensor is not reading, return no motor command
+            return 0
+        # compute heading difference
+        depth_diff = depth_target - node_dict['pn'].depth
+        # p-control
+        zout = depth_diff * P
+        # limit output if necassary
+        if abs(zout) > z_max:
+            zout = copysign(r_max, zout)
+        return zout
+
+    # return the function we just created
+    return task
 
 def constant_r_success(r_target, tol):
     """return an anonymous function to test if at desired heading"""
     def isdone(node_dict):
-        """return a delta heading value to best turn to heading"""
+        """Are we at desired heading?"""
         # compute heading difference
         hdiff = heading_diff(r_target, node_dict['pn'].heading)
+        # return if we are we close enough
+        return abs(hdiff) < abs(tol)
+
+    # return the function we just created
+    return isdone
+
+def constant_z_success(depth_target, tol):
+    """return an anonymous function to test if at desired depth"""
+    def isdone(node_dict):
+        """Are we at desired depth?"""
+        # compute heading difference
+        zdiff = depth_target - node_dict['pn'].depth
         # return if we are we close enough
         return abs(hdiff) < abs(tol)
 
