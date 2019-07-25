@@ -14,7 +14,7 @@ device = '/dev/ttyACM0'
 runnum = episode()
 pn = PixhawkNode(device)
 
-total_time = 30  # total task time, seconds
+total_time = 10  # total task time, seconds
 target_heading = 80  # random choice
 
 # create dictionary of nodes needed for this task

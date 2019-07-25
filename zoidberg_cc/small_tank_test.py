@@ -22,9 +22,9 @@ target_heading = 80  # random choice
 target_depth = 0.3  # not too deep for a tank test
 forward_speed = 10  # not too fast for a tank test
 
-heading_time = 30  # max heading task time, seconds
-depth_time = 30  # max depth task time, seconds
-drive_time = 30  # max drive task time, seconds
+heading_time = 10  # max heading task time, seconds
+depth_time = 10  # max depth task time, seconds
+drive_time = 10  # max drive task time, seconds
 
 
 # setup devices
