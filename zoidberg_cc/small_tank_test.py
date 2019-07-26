@@ -26,7 +26,6 @@ heading_time = 10  # max heading task time, seconds
 depth_time = 10  # max depth task time, seconds
 drive_time = 10  # max drive task time, seconds
 
-
 # setup devices
 pn = PixhawkNode(device)
 
@@ -47,9 +46,9 @@ try:
     # startup data stream
     pn.isactive(True)
 
-    is_timeout = change_heading(node_dict, runnum, total_time, target_heading)
-    is_timeout = change_depth(node_dict, runnum, total_time, target_depth)
-    is_timeout = drive_robot(node_dict, runnum, total_time, speed_forward=forward_speed)
+    is_timeout = change_heading(node_dict, runnum, heading_time, target_heading)
+    is_timeout = change_depth(node_dict, runnum, depth_time, target_depth)
+    is_timeout = drive_robot(node_dict, runnum, drive_time, speed_forward=forward_speed)
 
     if is_timeout:
         print('Reached desired heading')
