@@ -46,15 +46,9 @@ try:
     # startup data stream
     pn.isactive(True)
 
-<<<<<<< HEAD
     is_timeout = change_heading(node_dict, runnum, total_time, target_heading)
     is_timeout = change_depth(node_dict, runnum, total_time, target_depth)
     is_timeout = drive_robot(node_dict, runnum, total_time, speed_forward=forward_speed, speed_side=side_speed)
-=======
-    is_timeout = change_heading(node_dict, runnum, heading_time, target_heading)
-    is_timeout = change_depth(node_dict, runnum, depth_time, target_depth)
-    is_timeout = drive_robot(node_dict, runnum, drive_time, speed_forward=forward_speed)
->>>>>>> 59e23c256c7145f96636ffde03282a449132ee73
 
     if is_timeout:
         print('Reached desired heading')
