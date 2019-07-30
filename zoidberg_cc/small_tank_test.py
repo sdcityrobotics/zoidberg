@@ -18,21 +18,20 @@ device = '/dev/ttyACM0'
 # Windows address
 #device = 'COM3'
 
-target_heading = 80  # random choice
+target_heading = 80  # random choice - will be changed after calibrating in pool
 target_depth = 0.3  # not too deep for a tank test
 forward_speed = 10  # not too fast for a tank test
+side_speed = 10 # not too fast of a value
 
 heading_time = 10  # max heading task time, seconds
 depth_time = 10  # max depth task time, seconds
 drive_time = 10  # max drive task time, seconds
-
 
 # setup devices
 pn = PixhawkNode(device)
 
 # uncomment to test the zed camera
 # zn = ZedNode(device)
-
 
 # create dictionary of nodes needed for this task
 node_dict = {'pn':pn}
@@ -49,7 +48,7 @@ try:
 
     is_timeout = change_heading(node_dict, runnum, total_time, target_heading)
     is_timeout = change_depth(node_dict, runnum, total_time, target_depth)
-    is_timeout = drive_robot(node_dict, runnum, total_time, speed_forward=forward_speed)
+    is_timeout = drive_robot(node_dict, runnum, total_time, speed_forward=forward_speed, speed_side=side_speed)
 
     if is_timeout:
         print('Reached desired heading')

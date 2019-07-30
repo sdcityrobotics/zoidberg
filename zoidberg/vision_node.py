@@ -36,6 +36,10 @@ class VisionNode:
 
     def gate_detection(self, gate_legs):
         """Gate detection object creation"""
+        # r_g = right gate leg
+        # l_g = left gate leg 
+        # gate = top gate bar
+        # ul = upper left, br = bottom right
         r_g_ul_x = None
         r_g_ul_y = None
         r_g_br_x = None
@@ -125,6 +129,7 @@ class VisionNode:
         # Step the frame number
         self.frame_num += 1
 
+        # make copies of images
         img_color = img.copy()
         scan_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
@@ -144,6 +149,7 @@ class VisionNode:
         # initialize buoy array and counter
         buoys = []
 
+        # loop through found contours to make decisions
         for contour in contours:
             # if the length of the contour is long enough to be a potential buoy
             if (len(contour) > 45):
@@ -267,8 +273,11 @@ class VisionNode:
            self.detections = None
            pass
 
+        
     def find_gate(self, image, depth):
-        """Gate leg class"""
+       """Gate detection"""
+       
+       """Gate leg class"""
         class GateLeg:
             def __init__(self):
                 self.x = None
@@ -330,7 +339,7 @@ class VisionNode:
         close = cv2.morphologyEx(vertical, cv2.MORPH_CLOSE, kernel)
         im2, contours, hierarchy = cv2.findContours(close, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
-        # initialize
+        # initialize constants and variables
         main = True
         adjust = True
         min_area = 20*20
