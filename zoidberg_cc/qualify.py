@@ -76,7 +76,6 @@ try:
                    # if not at the end but gate was found, now drive straight for awhile
                    if (end_count >= 5):
                        # drive straight for a given amount of time
-                       """how to drive straight for a given amount of time?"""
                        drive_robot(node_dict, runnum, str8_time, speed_forward=forward_speed, side_speed=0)
 
             else:  

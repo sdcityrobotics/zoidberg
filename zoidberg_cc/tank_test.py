@@ -12,11 +12,11 @@ from zoidberg import PixhawkNode, episode, change_heading,\
                      change_depth, drive_robot
 
 # Linux address
-#device = '/dev/ttyACM0'
+device = '/dev/ttyACM0'
 # Mac OSX address
 #device = '/dev/tty.usbmodem1'
 # Windows address
-device = 'COM3'
+#device = 'COM3'
 
 target_heading = 80  # random choice - will be changed after calibrating in pool
 target_depth = 0.3  # not too deep for a tank test
