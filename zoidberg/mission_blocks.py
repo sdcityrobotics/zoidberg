@@ -147,7 +147,7 @@ def constant_z_success(depth_target, tol):
         # compute heading difference
         zdiff = depth_target - node_dict['pn'].depth
         # return if we are we close enough
-        return abs(hdiff) < abs(tol)
+        return abs(zdiff) < abs(tol)
 
     # return the function we just created
     return isdone

@@ -354,6 +354,7 @@ class VisionNode:
                 if (param < 0):
                     # nothing was found
                     print('null')
+                    self.detections = None
                     main = False
 
                 adjust = True

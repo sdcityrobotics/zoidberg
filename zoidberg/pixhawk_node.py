@@ -99,7 +99,7 @@ class PixhawkNode:
             message = self._mav.recv_match(type='PARAM_VALUE', blocking=True).to_dict()
             print('name: %s\tvalue: %d' % (message['param_id'], message['param_value']))
             # set mode to stabalize
-            self.change_mode('STABILIZE')
+            self.change_mode('MANUAL')
         else:
             # close the connection
             self.change_mode('MANUAL')
