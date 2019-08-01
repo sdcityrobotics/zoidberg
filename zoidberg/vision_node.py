@@ -275,9 +275,8 @@ class VisionNode:
 
         
     def find_gate(self, image, depth):
-       """Gate detection"""
-       
-       """Gate leg class"""
+        """Gate detection"""
+        """Gate leg class"""
         class GateLeg:
             def __init__(self):
                 self.x = None

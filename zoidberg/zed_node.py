@@ -6,10 +6,12 @@ Standard interface between Zoidberg and zed camera.
 import os
 
 # Don't require zed library if you don't need it
+"""
 try:
     import pyzed.sl as sl
 except ModuleNotFoundError:
     pass
+"""
 
 from zoidberg import timestamp
 import numpy as np
