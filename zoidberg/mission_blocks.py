@@ -1,4 +1,4 @@
-"""
+r"""
 ==============
 Mission blocks
 ==============
@@ -122,7 +122,7 @@ def constant_depth_task(depth_target, P, z_max):
         zout = depth_diff * P
         # limit output if necassary
         if abs(zout) > z_max:
-            zout = copysign(r_max, zout)
+            zout = copysign(z_max, zout)
         return zout
 
     # return the function we just created
