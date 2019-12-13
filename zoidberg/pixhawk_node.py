@@ -30,7 +30,7 @@ class PixhawkNode:
         *Except for Linux, numbers at the end of these strings may change*
         """
 
-        self.baud = 11520
+        self.baud = 115200
         self.port = port
         # currently only know how to request a lot of data
         self.data_stream_ID = mavutil.mavlink.MAV_DATA_STREAM_ALL
